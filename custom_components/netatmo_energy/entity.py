@@ -10,11 +10,12 @@ Valves are not separate devices: with one valve per room the room *is* the
 valve for the user, and separate devices would leave rooms or valves without
 entities.
 """
-# VERSION = "0.1.2"
+# VERSION = "0.2.0"
 
 from __future__ import annotations
 
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from pyatmo.home import Home
 from pyatmo.modules.module import Module
@@ -123,3 +124,65 @@ class NetatmoEnergyRoomEntity(CoordinatorEntity[NetatmoEnergyCoordinator]):
     def available(self) -> bool:
         """Unavailable when Netatmo says the room cannot be reached."""
         return super().available and self.room.reachable is not False
+
+    @property
+    def coordinator_available(self) -> bool:
+        """Return True when the last Netatmo poll succeeded."""
+        return self.coordinator.last_update_success
+
+
+class NetatmoEnergyValveEntity(NetatmoEnergyRoomEntity):
+    """Base for entities describing one valve, shown on its room device.
+
+    With several valves in a room the entity name gets the valve's name, so
+    "Battery" becomes "Battery Stue Varme".
+    """
+
+    def __init__(
+        self,
+        coordinator: NetatmoEnergyCoordinator,
+        room: Room,
+        valve: Module,
+        several_valves: bool,
+        description: EntityDescription,
+    ) -> None:
+        """Initialize the entity."""
+        super().__init__(coordinator, room)
+        self.valve = valve
+        self.entity_description = description
+        self._attr_unique_id = f"{valve.entity_id}-{description.key}"
+        if several_valves:
+            self._attr_translation_key = (
+                f"{description.translation_key or description.key}_multi"
+            )
+            self._attr_translation_placeholders = {"valve": valve.name}
+
+    @property
+    def available(self) -> bool:
+        """Unavailable while Netatmo cannot reach the valve."""
+        return self.coordinator_available and self.valve.reachable is not False
+
+
+class NetatmoEnergyRelayEntity(CoordinatorEntity[NetatmoEnergyCoordinator]):
+    """Base for entities on the relay device."""
+
+    _attr_has_entity_name = True
+
+    def __init__(
+        self, coordinator: NetatmoEnergyCoordinator, home: Home, relay: Module
+    ) -> None:
+        """Initialize the entity."""
+        super().__init__(coordinator)
+        self.home = home
+        self.relay = relay
+        self._attr_device_info = relay_device_info(relay, home)
+
+    @property
+    def coordinator_available(self) -> bool:
+        """Return True when the last Netatmo poll succeeded."""
+        return self.coordinator.last_update_success
+
+    @property
+    def available(self) -> bool:
+        """Unavailable while Netatmo reports the relay unreachable."""
+        return self.coordinator_available and self.relay.reachable is not False

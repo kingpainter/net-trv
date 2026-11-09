@@ -41,6 +41,56 @@
           }
         }
       }
+    },
+    "sensor": {
+      "battery_state": {
+        "name": "Battery state",
+        "state": {
+          "max": "Max",
+          "full": "Full",
+          "high": "High",
+          "medium": "Medium",
+          "low": "Low",
+          "very_low": "Very low"
+        }
+      },
+      "battery_state_multi": {
+        "name": "Battery state {valve}",
+        "state": {
+          "max": "Max",
+          "full": "Full",
+          "high": "High",
+          "medium": "Medium",
+          "low": "Low",
+          "very_low": "Very low"
+        }
+      },
+      "battery_multi": {
+        "name": "Battery {valve}"
+      },
+      "rf_strength": {
+        "name": "Radio signal"
+      },
+      "rf_strength_multi": {
+        "name": "Radio signal {valve}"
+      },
+      "firmware": {
+        "name": "Firmware"
+      },
+      "firmware_multi": {
+        "name": "Firmware {valve}"
+      },
+      "wifi_strength": {
+        "name": "Wi-Fi signal"
+      },
+      "valves_online": {
+        "name": "Valves online"
+      }
+    },
+    "binary_sensor": {
+      "connectivity_multi": {
+        "name": "Connection {valve}"
+      }
     }
   },
   "exceptions": {

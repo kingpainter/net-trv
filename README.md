@@ -21,14 +21,14 @@ to expose everything the Netatmo Energy API offers for those devices.
   so it does not share rate limits or the webhook with the core `netatmo`
   integration.
 
-## Features (0.1.2)
+## Features (0.2.0)
 
 | Feature | Status |
 | --- | --- |
 | OAuth2 config flow with reauth | ✅ |
 | Climate per room (auto / heat / off, presets) | ✅ |
 | Polling every 60 s with rate-limit backoff | ✅ |
-| Valve and relay diagnostics (battery, RF, firmware) | Planned (0.2.0) |
+| Valve and relay diagnostics (battery, signal, firmware, connection) | ✅ |
 | Real-time updates via Netatmo webhook | Planned (0.3.0) |
 | Schedule services and room history | Planned |
 
@@ -66,6 +66,13 @@ restart Home Assistant.
 | Entity | Description |
 | --- | --- |
 | `climate.<room>` | Room thermostat. Attributes: `heating_power_request`, `open_window`, `anticipating`, `netatmo_setpoint_mode`, `setpoint_end_time`. |
+| `sensor.<room>_battery` / `_battery_state` | Valve battery (% is approximate, derived from Netatmo's state). |
+| `sensor.<room>_radio_signal` | Valve radio signal to the relay, dBm. |
+| `sensor.<room>_firmware` | Valve firmware revision. |
+| `binary_sensor.<room>_connectivity` | Valve reachable by the relay. |
+| `sensor.<relay>_wi_fi_signal` / `_firmware` | Relay Wi-Fi signal (dBm) and firmware. |
+| `sensor.<relay>_valves_online` | Reachable valves; attributes `total` and `offline`. |
+| `binary_sensor.<relay>_connectivity` | Relay reachable by Netatmo. |
 
 ### Modes and presets
 

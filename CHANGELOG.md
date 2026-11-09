@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-11-09
+
+### Added
+- Valve diagnostics on each room device: battery (%), battery state, radio
+  signal (dBm), firmware and connection. Battery and firmware keep their last
+  value while a valve is unreachable; the radio signal goes unavailable.
+- Relay diagnostics: Wi-Fi signal (dBm), firmware, connection and "Valves
+  online" (count, with `total` and `offline` attributes).
+- Rooms with several valves name each valve's entities after the valve.
+- English and Danish names for all new entities.
+
 ## [0.1.2] - 2026-11-09
 
 ### Changed

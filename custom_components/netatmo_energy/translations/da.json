@@ -41,6 +41,56 @@
           }
         }
       }
+    },
+    "sensor": {
+      "battery_state": {
+        "name": "Batteritilstand",
+        "state": {
+          "max": "Maks",
+          "full": "Fuld",
+          "high": "Høj",
+          "medium": "Middel",
+          "low": "Lav",
+          "very_low": "Meget lav"
+        }
+      },
+      "battery_state_multi": {
+        "name": "Batteritilstand {valve}",
+        "state": {
+          "max": "Maks",
+          "full": "Fuld",
+          "high": "Høj",
+          "medium": "Middel",
+          "low": "Lav",
+          "very_low": "Meget lav"
+        }
+      },
+      "battery_multi": {
+        "name": "Batteri {valve}"
+      },
+      "rf_strength": {
+        "name": "Radiosignal"
+      },
+      "rf_strength_multi": {
+        "name": "Radiosignal {valve}"
+      },
+      "firmware": {
+        "name": "Firmware"
+      },
+      "firmware_multi": {
+        "name": "Firmware {valve}"
+      },
+      "wifi_strength": {
+        "name": "Wi-Fi-signal"
+      },
+      "valves_online": {
+        "name": "Ventiler online"
+      }
+    },
+    "binary_sensor": {
+      "connectivity_multi": {
+        "name": "Forbindelse {valve}"
+      }
     }
   },
   "exceptions": {

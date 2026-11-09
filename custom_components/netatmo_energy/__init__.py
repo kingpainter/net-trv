@@ -1,5 +1,5 @@
 """The Netatmo Energy integration: Netatmo relay (NAPlug) and valves (NRV)."""
-# VERSION = "0.1.2"
+# VERSION = "0.2.0"
 
 from __future__ import annotations
 
@@ -22,7 +22,11 @@ from .entity import relay_device_info, relay_of, room_identifier, valves_in
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS: list[Platform] = [Platform.CLIMATE]
+PLATFORMS: list[Platform] = [
+    Platform.BINARY_SENSOR,
+    Platform.CLIMATE,
+    Platform.SENSOR,
+]
 
 
 async def async_setup_entry(
