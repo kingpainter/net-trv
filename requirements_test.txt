@@ -1,0 +1,3 @@
+# Pulls in a matching homeassistant core for tests.
+pytest-homeassistant-custom-component
+pyatmo==9.9.0
