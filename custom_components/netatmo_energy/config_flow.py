@@ -1,5 +1,5 @@
 """Config flow for Netatmo Energy (OAuth2 against the user's own Netatmo app)."""
-# VERSION = "0.1.0"
+# VERSION = "0.1.1"
 
 from __future__ import annotations
 

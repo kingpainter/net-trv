@@ -1,5 +1,5 @@
 """Constants for the Netatmo Energy integration."""
-# VERSION = "0.1.0"
+# VERSION = "0.1.1"
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from datetime import timedelta
 from typing import Final
 
 DOMAIN: Final = "netatmo_energy"
-VERSION: Final = "0.1.0"
+VERSION: Final = "0.1.1"
 MANUFACTURER: Final = "Netatmo"
 
 OAUTH2_AUTHORIZE: Final = "https://api.netatmo.com/oauth2/authorize"

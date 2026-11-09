@@ -19,7 +19,7 @@ to expose everything the Netatmo Energy API offers for those devices.
   so it does not share rate limits or the webhook with the core `netatmo`
   integration.
 
-## Features (0.1.0)
+## Features (0.1.1)
 
 | Feature | Status |
 | --- | --- |
@@ -32,7 +32,7 @@ to expose everything the Netatmo Energy API offers for those devices.
 
 ## Requirements
 
-- Home Assistant 2025.1 or newer.
+- Home Assistant 2026.10 or newer.
 - A Netatmo developer app from [dev.netatmo.com](https://dev.netatmo.com/apps)
   (client id and client secret).
 - A Netatmo thermostat relay (NAPlug) with radiator valves (NRV).

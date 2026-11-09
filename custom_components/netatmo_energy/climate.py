@@ -1,5 +1,5 @@
 """Climate entities for Netatmo Energy: one per Netatmo room."""
-# VERSION = "0.1.0"
+# VERSION = "0.1.1"
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from collections.abc import Awaitable
 from datetime import UTC, datetime
 from typing import Any, override
 
-from homeassistant.components.climate import (
-    ClimateEntity,
+from homeassistant.components.climate import ClimateEntity
+from homeassistant.components.climate.const import (
     ClimateEntityFeature,
     HVACAction,
     HVACMode,
@@ -46,6 +46,21 @@ PARALLEL_UPDATES = 1
 # Used when switching to HEAT from a room that has no usable setpoint
 # (e.g. it was "off" at 7 C). A plain comfort value; adjust after testing.
 DEFAULT_HEAT_TEMP = 20.0
+
+# HA 2026.11 renamed the climate temperature attributes to native_* (the old
+# names stop working in 2027.11). The test package only ships HA 2026.10 so
+# far, so we pick the names at import time and support both. Drop the old
+# branch once tests run on 2026.11+.
+_NATIVE_TEMPS = hasattr(ClimateEntity, "native_temperature_unit")
+_UNIT_ATTR = (
+    "_attr_native_temperature_unit" if _NATIVE_TEMPS else "_attr_temperature_unit"
+)
+_CURRENT_ATTR = (
+    "_attr_native_current_temperature" if _NATIVE_TEMPS else "_attr_current_temperature"
+)
+_TARGET_ATTR = (
+    "_attr_native_target_temperature" if _NATIVE_TEMPS else "_attr_target_temperature"
+)
 
 # Home-level modes that a room in "schedule" follows.
 _HOME_MODE_TO_PRESET = {
@@ -119,7 +134,6 @@ class NetatmoEnergyClimate(NetatmoEnergyRoomEntity, ClimateEntity):
 
     _attr_name = None
     _attr_translation_key = "room"
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_hvac_modes = [HVACMode.AUTO, HVACMode.HEAT, HVACMode.OFF]
     _attr_preset_modes = list(PRESETS)
     _attr_min_temp = MIN_TEMP
@@ -136,6 +150,7 @@ class NetatmoEnergyClimate(NetatmoEnergyRoomEntity, ClimateEntity):
         """Initialize the climate entity."""
         super().__init__(coordinator, room)
         self._attr_unique_id = f"{room.home.entity_id}-{room.entity_id}-climate"
+        setattr(self, _UNIT_ATTR, UnitOfTemperature.CELSIUS)
         self._update_attrs()
 
     @callback
@@ -147,8 +162,8 @@ class NetatmoEnergyClimate(NetatmoEnergyRoomEntity, ClimateEntity):
     @callback
     def _update_attrs(self) -> None:
         room = self.room
-        self._attr_current_temperature = room.therm_measured_temperature
-        self._attr_target_temperature = room.therm_setpoint_temperature
+        setattr(self, _CURRENT_ATTR, room.therm_measured_temperature)
+        setattr(self, _TARGET_ATTR, room.therm_setpoint_temperature)
         self._attr_hvac_mode, self._attr_preset_mode = resolve_state(
             room.therm_setpoint_mode,
             room.home.therm_mode,

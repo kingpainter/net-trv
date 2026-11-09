@@ -4,7 +4,7 @@ The pyatmo ``AsyncAccount`` is the single source of truth: entities read
 straight from its ``Home``/``Room``/``Module`` objects. The coordinator only
 decides *when* to refresh it (polling now, webhook from step 1c).
 """
-# VERSION = "0.1.0"
+# VERSION = "0.1.1"
 
 from __future__ import annotations
 
@@ -88,6 +88,8 @@ class NetatmoEnergyCoordinator(DataUpdateCoordinator[None]):
         self.auth = auth
         self.account = pyatmo.AsyncAccount(auth)
         self.home_ids: list[str] = []
+        # home id -> device registry id of its relay (for via_device_id).
+        self.relay_device_ids: dict[str, str] = {}
         self._topology_at: float | None = None
         self._confirm_unsub: CALLBACK_TYPE | None = None
         self._unreachable_logged: set[str] = set()

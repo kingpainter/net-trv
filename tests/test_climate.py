@@ -85,12 +85,18 @@ async def test_device_tree(
     await _setup(hass, config_entry)
     registry = dr.async_get(hass)
 
-    relay = registry.async_get_device(identifiers={(DOMAIN, "70:ee:50:00:00:01")})
-    valve = registry.async_get_device(identifiers={(DOMAIN, "09:00:00:00:00:01")})
-    room = registry.async_get_device(identifiers={(DOMAIN, "home1-1001")})
-    assert relay is not None
-    assert valve is not None
-    assert room is not None
+    def device(identifier: str) -> dr.DeviceEntry:
+        # async_get_device is deprecated since HA 2026.10; identifiers are only
+        # unique per config entry now.
+        found = registry.async_get_devices(
+            identifiers={(DOMAIN, identifier)}, config_entry_id=config_entry.entry_id
+        )
+        assert len(found) == 1
+        return found[0]
+
+    relay = device("70:ee:50:00:00:01")
+    valve = device("09:00:00:00:00:01")
+    room = device("home1-1001")
     assert valve.via_device_id == relay.id
     assert room.via_device_id == relay.id
     assert valve.sw_version == "79"

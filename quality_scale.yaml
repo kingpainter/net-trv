@@ -1,0 +1,55 @@
+# Integration Quality Scale status for netatmo_energy.
+# Target: Silver. Values: done | todo | exempt (with comment).
+rules:
+  # Bronze
+  action-setup:
+    status: exempt
+    comment: No custom actions yet (planned in phase 3).
+  appropriate-polling: done
+  brands:
+    status: exempt
+    comment: Custom integration, no brands entry.
+  common-modules: done
+  config-flow-test-coverage: done
+  config-flow: done
+  dependency-transparency: done
+  docs-actions:
+    status: exempt
+    comment: No custom actions yet.
+  docs-high-level-description: done
+  docs-installation-instructions: done
+  docs-removal-instructions: todo
+  entity-event-setup:
+    status: exempt
+    comment: Entities do not subscribe to events.
+  entity-unique-id: done
+  has-entity-name: done
+  runtime-data: done
+  test-before-configure:
+    status: todo
+    comment: OAuth flow does not call the API before creating the entry yet.
+  test-before-setup: done
+  unique-config-entry: done
+
+  # Silver
+  action-exceptions: done
+  config-entry-unloading: done
+  docs-configuration-parameters:
+    status: exempt
+    comment: No options flow.
+  docs-installation-parameters: done
+  entity-unavailable: done
+  integration-owner: todo
+  log-when-unavailable: done
+  parallel-updates: done
+  reauthentication-flow: done
+  test-coverage: todo
+
+  # Gold / Platinum (tracked, not targeted yet)
+  devices: done
+  diagnostics: todo
+  entity-translations: done
+  exception-translations: done
+  inject-websession: done
+  async-dependency: done
+  strict-typing: done

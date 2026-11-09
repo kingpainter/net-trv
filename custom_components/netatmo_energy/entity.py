@@ -6,7 +6,7 @@ Device tree in Home Assistant:
     ├── Room (one per Netatmo room, holds the climate entity)
     └── Valve (NRV, one per valve, holds diagnostics from step 1b)
 """
-# VERSION = "0.1.0"
+# VERSION = "0.1.1"
 
 from __future__ import annotations
 
@@ -32,8 +32,12 @@ def relay_of(home: Home) -> Module | None:
     )
 
 
-def module_device_info(module: Module) -> DeviceInfo:
-    """Device info for a physical module (relay or valve)."""
+def module_device_info(module: Module, via_device_id: str | None = None) -> DeviceInfo:
+    """Device info for a physical module (relay or valve).
+
+    ``via_device_id`` is the registry id of the relay device (HA 2026.10+
+    replaced the ``via_device`` identifier tuple with the registry id).
+    """
     info = DeviceInfo(
         identifiers={(DOMAIN, module.entity_id)},
         manufacturer=MANUFACTURER,
@@ -44,12 +48,12 @@ def module_device_info(module: Module) -> DeviceInfo:
     )
     if (firmware := getattr(module, "firmware_revision", None)) is not None:
         info["sw_version"] = str(firmware)
-    if module.bridge:
-        info["via_device"] = (DOMAIN, module.bridge)
+    if via_device_id is not None:
+        info["via_device_id"] = via_device_id
     return info
 
 
-def room_device_info(room: Room) -> DeviceInfo:
+def room_device_info(room: Room, via_device_id: str | None = None) -> DeviceInfo:
     """Device info for a Netatmo room (logical device under the relay)."""
     info = DeviceInfo(
         identifiers={(DOMAIN, f"{room.home.entity_id}-{room.entity_id}")},
@@ -57,8 +61,8 @@ def room_device_info(room: Room) -> DeviceInfo:
         model="Room",
         name=room.name,
     )
-    if (relay := relay_of(room.home)) is not None:
-        info["via_device"] = (DOMAIN, relay.entity_id)
+    if via_device_id is not None:
+        info["via_device_id"] = via_device_id
     return info
 
 
@@ -71,7 +75,9 @@ class NetatmoEnergyRoomEntity(CoordinatorEntity[NetatmoEnergyCoordinator]):
         """Initialize the entity."""
         super().__init__(coordinator)
         self.room = room
-        self._attr_device_info = room_device_info(room)
+        self._attr_device_info = room_device_info(
+            room, coordinator.relay_device_ids.get(room.home.entity_id)
+        )
 
     @property
     def available(self) -> bool:

@@ -1,5 +1,5 @@
 """The Netatmo Energy integration: Netatmo relay (NAPlug) and valves (NRV)."""
-# VERSION = "0.1.0"
+# VERSION = "0.1.1"
 
 from __future__ import annotations
 
@@ -65,19 +65,24 @@ def _register_devices(
     """Register relay and valve devices up front.
 
     The relay must exist before rooms and valves point at it via
-    ``via_device``. Valves get their own entities in step 1b; registering
-    them now already shows the relay -> valve tree in the device page.
+    ``via_device_id`` (its registry id), so it is registered first and its id
+    kept on the coordinator for the room entities. Valves get their own
+    entities in step 1b; registering them now already shows the tree.
     """
     registry = dr.async_get(hass)
     for home in coordinator.homes:
+        relay_device_id: str | None = None
         if (relay := relay_of(home)) is not None:
-            registry.async_get_or_create(
+            relay_device = registry.async_get_or_create(
                 config_entry_id=entry.entry_id, **module_device_info(relay)
             )
+            relay_device_id = relay_device.id
+            coordinator.relay_device_ids[home.entity_id] = relay_device_id
         for module in home.modules.values():
             if module.device_type in VALVE_TYPES:
                 registry.async_get_or_create(
-                    config_entry_id=entry.entry_id, **module_device_info(module)
+                    config_entry_id=entry.entry_id,
+                    **module_device_info(module, relay_device_id),
                 )
 
 
