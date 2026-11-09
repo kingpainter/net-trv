@@ -1,7 +1,9 @@
 """The Netatmo Energy integration: Netatmo relay (NAPlug) and valves (NRV)."""
-# VERSION = "0.1.1"
+# VERSION = "0.1.2"
 
 from __future__ import annotations
+
+import logging
 
 from aiohttp import ClientResponseError
 from homeassistant.const import Platform
@@ -14,9 +16,11 @@ from homeassistant.helpers import (
 )
 
 from .api import NetatmoEnergyAuth
-from .const import DOMAIN, VALVE_TYPES
+from .const import DOMAIN
 from .coordinator import NetatmoEnergyConfigEntry, NetatmoEnergyCoordinator
-from .entity import module_device_info, relay_of
+from .entity import relay_device_info, relay_of, room_identifier, valves_in
+
+_LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [Platform.CLIMATE]
 
@@ -45,8 +49,9 @@ async def async_setup_entry(
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
 
-    _register_devices(hass, entry, coordinator)
+    _register_relays(hass, entry, coordinator)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    _remove_stale_devices(hass, entry, coordinator)
     return True
 
 
@@ -57,33 +62,57 @@ async def async_unload_entry(
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
-def _register_devices(
+def _register_relays(
     hass: HomeAssistant,
     entry: NetatmoEnergyConfigEntry,
     coordinator: NetatmoEnergyCoordinator,
 ) -> None:
-    """Register relay and valve devices up front.
+    """Register the relay of each home before the room entities are added.
 
-    The relay must exist before rooms and valves point at it via
-    ``via_device_id`` (its registry id), so it is registered first and its id
-    kept on the coordinator for the room entities. Valves get their own
-    entities in step 1b; registering them now already shows the tree.
+    Room devices point at the relay via ``via_device_id`` (its registry id),
+    so the relay must exist first; its id is kept on the coordinator.
     """
     registry = dr.async_get(hass)
     for home in coordinator.homes:
-        relay_device_id: str | None = None
         if (relay := relay_of(home)) is not None:
             relay_device = registry.async_get_or_create(
-                config_entry_id=entry.entry_id, **module_device_info(relay)
+                config_entry_id=entry.entry_id, **relay_device_info(relay, home)
             )
-            relay_device_id = relay_device.id
-            coordinator.relay_device_ids[home.entity_id] = relay_device_id
-        for module in home.modules.values():
-            if module.device_type in VALVE_TYPES:
-                registry.async_get_or_create(
-                    config_entry_id=entry.entry_id,
-                    **module_device_info(module, relay_device_id),
-                )
+            coordinator.relay_device_ids[home.entity_id] = relay_device.id
+
+
+def _expected_identifiers(coordinator: NetatmoEnergyCoordinator) -> set[str]:
+    """Return the device identifiers this integration should currently own."""
+    expected: set[str] = set()
+    for home in coordinator.homes:
+        if (relay := relay_of(home)) is not None:
+            expected.add(relay.entity_id)
+        expected.update(
+            room_identifier(room) for room in home.rooms.values() if valves_in(room)
+        )
+    return expected
+
+
+def _remove_stale_devices(
+    hass: HomeAssistant,
+    entry: NetatmoEnergyConfigEntry,
+    coordinator: NetatmoEnergyCoordinator,
+) -> None:
+    """Detach this entry from devices it no longer provides.
+
+    Covers rooms without valves and the per-valve devices from 0.1.0/0.1.1.
+    Only devices of this config entry are touched; HA deletes a device once
+    no config entry references it.
+    """
+    registry = dr.async_get(hass)
+    expected = _expected_identifiers(coordinator)
+    for device in dr.async_entries_for_config_entry(registry, entry.entry_id):
+        ours = {ident for domain, ident in device.identifiers if domain == DOMAIN}
+        if ours and not ours & expected:
+            _LOGGER.debug("Removing stale device %s (%s)", device.name, ours)
+            registry.async_update_device(
+                device.id, remove_config_entry_id=entry.entry_id
+            )
 
 
 async def async_remove_config_entry_device(
@@ -91,12 +120,9 @@ async def async_remove_config_entry_device(
     entry: NetatmoEnergyConfigEntry,
     device_entry: dr.DeviceEntry,
 ) -> bool:
-    """Allow removing devices that Netatmo no longer reports."""
-    known: set[str] = set()
-    for home in entry.runtime_data.homes:
-        known.update(home.modules)
-        known.update(f"{home.entity_id}-{room_id}" for room_id in home.rooms)
+    """Allow removing devices that this integration no longer provides."""
+    expected = _expected_identifiers(entry.runtime_data)
     return not any(
-        identifier[0] == DOMAIN and identifier[1] in known
-        for identifier in device_entry.identifiers
+        domain == DOMAIN and ident in expected
+        for domain, ident in device_entry.identifiers
     )

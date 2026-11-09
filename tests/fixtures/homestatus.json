@@ -5,13 +5,58 @@
     "home": {
       "id": "home1",
       "modules": [
-        {"id": "70:ee:50:00:00:01", "type": "NAPlug", "firmware_revision": 174, "rf_strength": 107, "wifi_strength": 42},
-        {"id": "09:00:00:00:00:01", "type": "NRV", "reachable": true, "firmware_revision": 79, "rf_strength": 51, "battery_state": "full", "bridge": "70:ee:50:00:00:01"},
-        {"id": "09:00:00:00:00:02", "type": "NRV", "reachable": true, "firmware_revision": 79, "rf_strength": 60, "battery_state": "medium", "bridge": "70:ee:50:00:00:01"}
+        {
+          "id": "70:ee:50:00:00:01",
+          "type": "NAPlug",
+          "firmware_revision": 174,
+          "rf_strength": 107,
+          "wifi_strength": 42
+        },
+        {
+          "id": "09:00:00:00:00:01",
+          "type": "NRV",
+          "reachable": true,
+          "firmware_revision": 79,
+          "rf_strength": 51,
+          "battery_state": "full",
+          "bridge": "70:ee:50:00:00:01"
+        },
+        {
+          "id": "09:00:00:00:00:02",
+          "type": "NRV",
+          "reachable": true,
+          "firmware_revision": 79,
+          "rf_strength": 60,
+          "battery_state": "medium",
+          "bridge": "70:ee:50:00:00:01"
+        }
       ],
       "rooms": [
-        {"id": "1001", "reachable": true, "therm_measured_temperature": 20.5, "therm_setpoint_temperature": 21, "therm_setpoint_mode": "schedule", "heating_power_request": 40, "anticipating": false, "open_window": false},
-        {"id": "1002", "reachable": true, "therm_measured_temperature": 22.0, "therm_setpoint_temperature": 7, "therm_setpoint_mode": "manual", "therm_setpoint_end_time": 1762710000, "heating_power_request": 0, "anticipating": false, "open_window": false}
+        {
+          "id": "1001",
+          "reachable": true,
+          "therm_measured_temperature": 20.5,
+          "therm_setpoint_temperature": 21,
+          "therm_setpoint_mode": "schedule",
+          "heating_power_request": 40,
+          "anticipating": false,
+          "open_window": false
+        },
+        {
+          "id": "1002",
+          "reachable": true,
+          "therm_measured_temperature": 22.0,
+          "therm_setpoint_temperature": 7,
+          "therm_setpoint_mode": "manual",
+          "therm_setpoint_end_time": 1762710000,
+          "heating_power_request": 0,
+          "anticipating": false,
+          "open_window": false
+        },
+        {
+          "id": "1003",
+          "reachable": true
+        }
       ]
     }
   }

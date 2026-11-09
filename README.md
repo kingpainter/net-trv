@@ -14,12 +14,14 @@ to expose everything the Netatmo Energy API offers for those devices.
 - One climate entity per Netatmo room, with `hvac_action` derived from the
   valves' heating demand (works on district heating, where there is no boiler
   behind the relay).
-- Device tree: relay → rooms and valves (`via_device`).
+- Device tree: relay (hub) → one device per room with a valve. The room
+  device carries the valve's serial number and firmware; rooms without a
+  valve are skipped.
 - Uses its own Netatmo app with only `read_thermostat` and `write_thermostat`,
   so it does not share rate limits or the webhook with the core `netatmo`
   integration.
 
-## Features (0.1.1)
+## Features (0.1.2)
 
 | Feature | Status |
 | --- | --- |

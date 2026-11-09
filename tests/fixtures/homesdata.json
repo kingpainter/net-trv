@@ -11,8 +11,30 @@
         "therm_mode": "schedule",
         "therm_setpoint_default_duration": 180,
         "rooms": [
-          {"id": "1001", "name": "Stuen", "type": "livingroom", "module_ids": ["09:00:00:00:00:01"]},
-          {"id": "1002", "name": "Bad", "type": "bathroom", "module_ids": ["09:00:00:00:00:02"]}
+          {
+            "id": "1001",
+            "name": "Stuen",
+            "type": "livingroom",
+            "module_ids": [
+              "09:00:00:00:00:01"
+            ]
+          },
+          {
+            "id": "1002",
+            "name": "Bad",
+            "type": "bathroom",
+            "module_ids": [
+              "09:00:00:00:00:02"
+            ]
+          },
+          {
+            "id": "1003",
+            "name": "Gang",
+            "type": "lobby",
+            "module_ids": [
+              "70:ee:50:00:00:01"
+            ]
+          }
         ],
         "modules": [
           {
@@ -20,10 +42,27 @@
             "type": "NAPlug",
             "name": "Relay",
             "setup_date": 1700000000,
-            "modules_bridged": ["09:00:00:00:00:01", "09:00:00:00:00:02"]
+            "modules_bridged": [
+              "09:00:00:00:00:01",
+              "09:00:00:00:00:02"
+            ]
           },
-          {"id": "09:00:00:00:00:01", "type": "NRV", "name": "Valve Stuen", "setup_date": 1700000000, "room_id": "1001", "bridge": "70:ee:50:00:00:01"},
-          {"id": "09:00:00:00:00:02", "type": "NRV", "name": "Valve Bad", "setup_date": 1700000000, "room_id": "1002", "bridge": "70:ee:50:00:00:01"}
+          {
+            "id": "09:00:00:00:00:01",
+            "type": "NRV",
+            "name": "Valve Stuen",
+            "setup_date": 1700000000,
+            "room_id": "1001",
+            "bridge": "70:ee:50:00:00:01"
+          },
+          {
+            "id": "09:00:00:00:00:02",
+            "type": "NRV",
+            "name": "Valve Bad",
+            "setup_date": 1700000000,
+            "room_id": "1002",
+            "bridge": "70:ee:50:00:00:01"
+          }
         ],
         "schedules": [
           {
@@ -34,12 +73,38 @@
             "default": false,
             "away_temp": 12,
             "hg_temp": 7,
-            "zones": [{"id": 0, "type": 0, "name": "Comfort", "rooms": [{"id": "1001", "therm_setpoint_temperature": 21}, {"id": "1002", "therm_setpoint_temperature": 22}]}],
-            "timetable": [{"zone_id": 0, "m_offset": 0}]
+            "zones": [
+              {
+                "id": 0,
+                "type": 0,
+                "name": "Comfort",
+                "rooms": [
+                  {
+                    "id": "1001",
+                    "therm_setpoint_temperature": 21
+                  },
+                  {
+                    "id": "1002",
+                    "therm_setpoint_temperature": 22
+                  }
+                ]
+              }
+            ],
+            "timetable": [
+              {
+                "zone_id": 0,
+                "m_offset": 0
+              }
+            ]
           }
         ]
       }
     ],
-    "user": {"email": "test@example.com", "unit_system": 0, "unit_wind": 0, "unit_pressure": 0}
+    "user": {
+      "email": "test@example.com",
+      "unit_system": 0,
+      "unit_wind": 0,
+      "unit_pressure": 0
+    }
   }
 }

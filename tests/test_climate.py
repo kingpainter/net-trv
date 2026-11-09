@@ -16,7 +16,7 @@ from homeassistant.components.climate import (
 )
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_TEMPERATURE
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import area_registry as ar, device_registry as dr
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -84,22 +84,59 @@ async def test_device_tree(
 ) -> None:
     await _setup(hass, config_entry)
     registry = dr.async_get(hass)
+    areas = ar.async_get(hass)
 
-    def device(identifier: str) -> dr.DeviceEntry:
+    def device(identifier: str) -> dr.DeviceEntry | None:
         # async_get_device is deprecated since HA 2026.10; identifiers are only
         # unique per config entry now.
         found = registry.async_get_devices(
             identifiers={(DOMAIN, identifier)}, config_entry_id=config_entry.entry_id
         )
-        assert len(found) == 1
-        return found[0]
+        assert len(found) <= 1
+        return found[0] if found else None
 
     relay = device("70:ee:50:00:00:01")
-    valve = device("09:00:00:00:00:01")
     room = device("home1-1001")
-    assert valve.via_device_id == relay.id
+    assert relay is not None
+    assert room is not None
+
+    # Room device carries the valve: serial, firmware, model, parent relay.
     assert room.via_device_id == relay.id
-    assert valve.sw_version == "79"
+    assert room.serial_number == "09:00:00:00:00:01"
+    assert room.sw_version == "79"
+    assert room.model == "Smart radiator valve"
+    assert room.area_id is None
+
+    # Relay lands in the room it sits in; no separate valve devices; no
+    # device for a room without a valve.
+    assert areas.async_get_area(relay.area_id).name == "Gang"
+    assert device("09:00:00:00:00:01") is None
+    assert device("home1-1003") is None
+    assert hass.states.get("climate.gang") is None
+    assert len(dr.async_entries_for_config_entry(registry, config_entry.entry_id)) == 3
+
+
+async def test_stale_devices_are_removed(
+    hass: HomeAssistant, config_entry: MockConfigEntry, mock_api: AsyncMock
+) -> None:
+    """Valve devices and valve-less rooms from 0.1.0/0.1.1 are cleaned up."""
+    config_entry.add_to_hass(hass)
+    registry = dr.async_get(hass)
+    for identifier in ("09:00:00:00:00:01", "home1-1003"):
+        registry.async_get_or_create(
+            config_entry_id=config_entry.entry_id,
+            identifiers={(DOMAIN, identifier)},
+        )
+
+    assert await hass.config_entries.async_setup(config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    remaining = {
+        ident
+        for device in dr.async_entries_for_config_entry(registry, config_entry.entry_id)
+        for _, ident in device.identifiers
+    }
+    assert remaining == {"70:ee:50:00:00:01", "home1-1001", "home1-1002"}
 
 
 async def test_set_temperature_calls_setroomthermpoint(
