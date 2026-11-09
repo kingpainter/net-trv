@@ -1,5 +1,5 @@
 """Application credentials platform for Netatmo Energy."""
-# VERSION = "0.2.0"
+# VERSION = "0.3.0"
 
 from __future__ import annotations
 

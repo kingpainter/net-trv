@@ -1,5 +1,5 @@
 """Constants for the Netatmo Energy integration."""
-# VERSION = "0.2.0"
+# VERSION = "0.3.0"
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from datetime import timedelta
 from typing import Final
 
 DOMAIN: Final = "netatmo_energy"
-VERSION: Final = "0.2.0"
+VERSION: Final = "0.3.0"
 MANUFACTURER: Final = "Netatmo"
 
 OAUTH2_AUTHORIZE: Final = "https://api.netatmo.com/oauth2/authorize"
@@ -29,6 +29,11 @@ THROTTLED_INTERVAL: Final = timedelta(seconds=300)
 TOPOLOGY_INTERVAL: Final = timedelta(hours=3)
 # Delay before re-reading state after a write, so Netatmo has applied it.
 CONFIRM_DELAY_SECONDS: Final = 5
+
+# Webhook (step 1c): entry data key for the Nabu Casa URL, and how many raw
+# payloads to keep for diagnostics.
+CONF_CLOUDHOOK_URL: Final = "cloudhook_url"
+WEBHOOK_BUFFER_SIZE: Final = 50
 
 # Netatmo per-user limits (dev.netatmo.com/guideline): 50 per 10 s, 500 per hour.
 RATE_LIMIT_PER_HOUR: Final = 500

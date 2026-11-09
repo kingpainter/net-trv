@@ -4,13 +4,17 @@ The pyatmo ``AsyncAccount`` is the single source of truth: entities read
 straight from its ``Home``/``Room``/``Module`` objects. The coordinator only
 decides *when* to refresh it (polling now, webhook from step 1c).
 """
-# VERSION = "0.2.0"
+# VERSION = "0.3.0"
 
 from __future__ import annotations
 
+from collections import deque
 from collections.abc import Awaitable
+from dataclasses import dataclass, field
+from datetime import datetime
 import logging
 from time import monotonic
+from typing import Any
 
 from aiohttp import ClientResponseError
 from homeassistant.config_entries import ConfigEntry
@@ -37,6 +41,7 @@ from .const import (
     STATUS_INTERVAL,
     THROTTLED_INTERVAL,
     TOPOLOGY_INTERVAL,
+    WEBHOOK_BUFFER_SIZE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -66,6 +71,26 @@ def selected_therm_schedule(home: Home) -> Schedule | None:
     )
 
 
+@dataclass
+class WebhookState:
+    """What we know about the Netatmo webhook (entity + diagnostics)."""
+
+    registered: bool = False
+    deleted_by_netatmo: bool = False
+    last_error: str | None = None
+    last_event_at: datetime | None = None
+    events_received: int = 0
+    rejected_signatures: int = 0
+    recent: deque[dict[str, Any]] = field(
+        default_factory=lambda: deque(maxlen=WEBHOOK_BUFFER_SIZE)
+    )
+
+    @property
+    def active(self) -> bool:
+        """Registered with Netatmo and not removed again."""
+        return self.registered and not self.deleted_by_netatmo
+
+
 class NetatmoEnergyCoordinator(DataUpdateCoordinator[None]):
     """Keep the pyatmo account fresh and tell entities when it changed."""
 
@@ -90,6 +115,9 @@ class NetatmoEnergyCoordinator(DataUpdateCoordinator[None]):
         self.home_ids: list[str] = []
         # home id -> device registry id of its relay (for via_device_id).
         self.relay_device_ids: dict[str, str] = {}
+        self.webhook = WebhookState()
+        # Set by async_setup_entry; the webhook needs its client secret.
+        self.oauth_implementation: object | None = None
         self._topology_at: float | None = None
         self._confirm_unsub: CALLBACK_TYPE | None = None
         self._unreachable_logged: set[str] = set()
@@ -163,6 +191,11 @@ class NetatmoEnergyCoordinator(DataUpdateCoordinator[None]):
             raise UpdateFailed("Timeout talking to Netatmo") from err
         else:
             self.update_interval = STATUS_INTERVAL
+
+    @callback
+    def async_signal_webhook(self) -> None:
+        """Tell entities that the webhook state changed."""
+        self.async_update_listeners()
 
     @callback
     def async_schedule_confirm(self) -> None:

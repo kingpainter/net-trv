@@ -90,6 +90,9 @@
     "binary_sensor": {
       "connectivity_multi": {
         "name": "Connection {valve}"
+      },
+      "webhook": {
+        "name": "Webhook"
       }
     }
   },

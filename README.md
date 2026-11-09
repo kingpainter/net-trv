@@ -21,7 +21,7 @@ to expose everything the Netatmo Energy API offers for those devices.
   so it does not share rate limits or the webhook with the core `netatmo`
   integration.
 
-## Features (0.2.0)
+## Features (0.3.0)
 
 | Feature | Status |
 | --- | --- |
@@ -29,7 +29,8 @@ to expose everything the Netatmo Energy API offers for those devices.
 | Climate per room (auto / heat / off, presets) | ✅ |
 | Polling every 60 s with rate-limit backoff | ✅ |
 | Valve and relay diagnostics (battery, signal, firmware, connection) | ✅ |
-| Real-time updates via Netatmo webhook | Planned (0.3.0) |
+| Netatmo webhook: registered, signature-verified, events recorded | ✅ |
+| Real-time state from webhook events | Planned (phase 2) |
 | Schedule services and room history | Planned |
 
 ## Requirements
@@ -73,6 +74,7 @@ restart Home Assistant.
 | `sensor.<relay>_wi_fi_signal` / `_firmware` | Relay Wi-Fi signal (dBm) and firmware. |
 | `sensor.<relay>_valves_online` | Reachable valves; attributes `total` and `offline`. |
 | `binary_sensor.<relay>_connectivity` | Relay reachable by Netatmo. |
+| `binary_sensor.<relay>_webhook` | Webhook registered with Netatmo; attributes `events_received`, `last_event`, `rejected_signatures`, `last_error`. |
 
 ### Modes and presets
 
@@ -84,6 +86,15 @@ restart Home Assistant.
 | Preset `boost` | Room `max` |
 | Preset `away` / `frost_guard` | **Home-wide** away / frost guard |
 | Preset `schedule` | Home back to schedule, room follows it |
+
+## Webhook
+
+The integration registers a webhook with your Netatmo app once Home Assistant
+has started. It uses your Nabu Casa cloudhook when available, otherwise your
+external URL, which must be HTTPS on port 443. Netatmo allows one webhook per
+app, so use a dedicated Netatmo app for this integration.
+
+Download diagnostics from the integration page to see the last 50 raw events.
 
 ## Troubleshooting
 

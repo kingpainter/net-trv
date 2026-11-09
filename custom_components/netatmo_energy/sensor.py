@@ -1,5 +1,5 @@
 """Diagnostic sensors for Netatmo Energy valves (on room devices) and the relay."""
-# VERSION = "0.2.0"
+# VERSION = "0.3.0"
 
 from __future__ import annotations
 

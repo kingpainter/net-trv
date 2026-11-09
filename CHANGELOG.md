@@ -4,6 +4,25 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - 2026-11-09
+
+### Added
+- Netatmo webhook (v1): registered automatically once Home Assistant has
+  started, via the Nabu Casa cloudhook or, without Nabu Casa, the external
+  HTTPS URL.
+- Every webhook call is verified (HMAC-SHA256 of the raw body with the app's
+  client secret, `X-Netatmo-secret`); bad or missing signatures get 401.
+- Calls are answered with 200 at once and recorded afterwards, so Netatmo's
+  5-second limit is never hit.
+- "Webhook" connectivity sensor on the relay with `events_received`,
+  `last_event`, `rejected_signatures` and `last_error`.
+- Diagnostics download with the last 50 raw webhook payloads (personal fields
+  redacted), home/room summary and API calls in the last hour.
+
+### Notes
+- Events are only recorded in this release; state still comes from polling
+  every 60 s. Merging webhook events into state is phase 2.
+
 ## [0.2.0] - 2026-11-09
 
 ### Added

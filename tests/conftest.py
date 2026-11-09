@@ -30,6 +30,20 @@ def auto_enable_custom_integrations(enable_custom_integrations: None) -> None:
     """Load custom_components in every test."""
 
 
+@pytest.fixture(autouse=True)
+def webhook_url(request: pytest.FixtureRequest) -> Generator[str | None]:
+    """Give the webhook a public URL; tests can override via indirect param.
+
+    Nabu Casa is not set up in tests, so the URL lookup is patched.
+    """
+    url = getattr(request, "param", "https://example.com/api/webhook/test")
+    with patch(
+        "custom_components.netatmo_energy.webhook._async_webhook_url",
+        return_value=url,
+    ):
+        yield url
+
+
 def load_fixture(name: str) -> dict[str, Any]:
     """Load a JSON fixture."""
     return json.loads((FIXTURES / name).read_text(encoding="utf-8"))

@@ -47,7 +47,7 @@ rules:
 
   # Gold / Platinum (tracked, not targeted yet)
   devices: done
-  diagnostics: todo
+  diagnostics: done
   entity-translations: done
   exception-translations: done
   inject-websession: done

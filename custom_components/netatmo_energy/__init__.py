@@ -1,5 +1,5 @@
 """The Netatmo Energy integration: Netatmo relay (NAPlug) and valves (NRV)."""
-# VERSION = "0.2.0"
+# VERSION = "0.3.0"
 
 from __future__ import annotations
 
@@ -14,11 +14,13 @@ from homeassistant.helpers import (
     config_entry_oauth2_flow,
     device_registry as dr,
 )
+from homeassistant.helpers.start import async_at_started
 
 from .api import NetatmoEnergyAuth
 from .const import DOMAIN
 from .coordinator import NetatmoEnergyConfigEntry, NetatmoEnergyCoordinator
 from .entity import relay_device_info, relay_of, room_identifier, valves_in
+from .webhook import async_remove_webhook, async_setup_webhook
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,12 +52,19 @@ async def async_setup_entry(
         aiohttp_client.async_get_clientsession(hass), oauth_session
     )
     coordinator = NetatmoEnergyCoordinator(hass, entry, auth)
+    coordinator.oauth_implementation = implementation
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
 
     _register_relays(hass, entry, coordinator)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     _remove_stale_devices(hass, entry, coordinator)
+
+    # Register the webhook once HA has started, so Nabu Casa is connected.
+    async def _start_webhook(hass: HomeAssistant) -> None:
+        await async_setup_webhook(hass, entry)
+
+    entry.async_on_unload(async_at_started(hass, _start_webhook))
     return True
 
 
@@ -64,6 +73,13 @@ async def async_unload_entry(
 ) -> bool:
     """Unload a config entry."""
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+async def async_remove_entry(
+    hass: HomeAssistant, entry: NetatmoEnergyConfigEntry
+) -> None:
+    """Clean up the Nabu Casa cloudhook when the integration is removed."""
+    await async_remove_webhook(hass, entry)
 
 
 def _register_relays(
