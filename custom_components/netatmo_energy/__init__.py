@@ -1,5 +1,5 @@
-"""The Netatmo Energy integration: Netatmo relay (NAPlug) and valves (NRV)."""
-# VERSION = "0.3.0"
+"""The NET-TRV integration: Netatmo relay (NAPlug) and valves (NRV)."""
+# VERSION = "0.3.1"
 
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ PLATFORMS: list[Platform] = [
 async def async_setup_entry(
     hass: HomeAssistant, entry: NetatmoEnergyConfigEntry
 ) -> bool:
-    """Set up Netatmo Energy from a config entry."""
+    """Set up NET-TRV from a config entry."""
     implementation = (
         await config_entry_oauth2_flow.async_get_config_entry_implementation(
             hass, entry

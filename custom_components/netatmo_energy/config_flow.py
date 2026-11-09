@@ -1,5 +1,5 @@
-"""Config flow for Netatmo Energy (OAuth2 against the user's own Netatmo app)."""
-# VERSION = "0.3.0"
+"""Config flow for NET-TRV (OAuth2 against the user's own Netatmo app)."""
+# VERSION = "0.3.1"
 
 from __future__ import annotations
 
@@ -57,4 +57,4 @@ class NetatmoEnergyFlowHandler(
             return self.async_update_reload_and_abort(
                 self._get_reauth_entry(), data=data
             )
-        return self.async_create_entry(title="Netatmo Energy", data=data)
+        return self.async_create_entry(title="NET-TRV", data=data)

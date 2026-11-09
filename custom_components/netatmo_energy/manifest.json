@@ -1,6 +1,6 @@
 {
   "domain": "netatmo_energy",
-  "name": "Netatmo Energy",
+  "name": "NET-TRV",
   "after_dependencies": [
     "cloud"
   ],
@@ -21,5 +21,5 @@
     "pyatmo==9.9.0"
   ],
   "single_config_entry": true,
-  "version": "0.3.0"
+  "version": "0.3.1"
 }

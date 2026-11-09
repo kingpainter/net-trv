@@ -1,10 +1,10 @@
-"""Data coordinator for Netatmo Energy.
+"""Data coordinator for NET-TRV.
 
 The pyatmo ``AsyncAccount`` is the single source of truth: entities read
 straight from its ``Home``/``Room``/``Module`` objects. The coordinator only
 decides *when* to refresh it (polling now, webhook from step 1c).
 """
-# VERSION = "0.3.0"
+# VERSION = "0.3.1"
 
 from __future__ import annotations
 

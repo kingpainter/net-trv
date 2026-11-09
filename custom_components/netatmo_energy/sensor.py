@@ -1,5 +1,5 @@
-"""Diagnostic sensors for Netatmo Energy valves (on room devices) and the relay."""
-# VERSION = "0.3.0"
+"""Diagnostic sensors for NET-TRV valves (on room devices) and the relay."""
+# VERSION = "0.3.1"
 
 from __future__ import annotations
 

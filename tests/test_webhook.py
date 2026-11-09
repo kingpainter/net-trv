@@ -1,4 +1,4 @@
-"""Tests for the Netatmo Energy webhook (step 1c: receive, verify, record)."""
+"""Tests for the NET-TRV webhook (step 1c: receive, verify, record)."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Tests for the Netatmo Energy config flow."""
+"""Tests for the NET-TRV config flow."""
 
 from __future__ import annotations
 
@@ -60,6 +60,6 @@ async def test_full_flow(
         result = await hass.config_entries.flow.async_configure(result["flow_id"])
 
     assert result["type"] is FlowResultType.CREATE_ENTRY
-    assert result["title"] == "Netatmo Energy"
+    assert result["title"] == "NET-TRV"
     assert result["data"]["token"]["access_token"] == "access"
     assert len(mock_setup.mock_calls) == 1

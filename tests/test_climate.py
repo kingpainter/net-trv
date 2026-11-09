@@ -1,4 +1,4 @@
-"""Tests for the Netatmo Energy climate platform."""
+"""Tests for the NET-TRV climate platform."""
 
 from __future__ import annotations
 

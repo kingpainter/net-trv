@@ -1,4 +1,4 @@
-"""Netatmo webhook (v1) for Netatmo Energy.
+"""Netatmo webhook (v1) for NET-TRV.
 
 Step 1c only *receives and records* events: every payload is verified
 (HMAC-SHA256 of the raw body with the app's client secret, sent in
@@ -6,7 +6,7 @@ Step 1c only *receives and records* events: every payload is verified
 suspends slow endpoints for up to 10 min), and kept in a short ring buffer for
 diagnostics. Merging events into state comes in phase 2.
 """
-# VERSION = "0.3.0"
+# VERSION = "0.3.1"
 
 from __future__ import annotations
 
@@ -136,20 +136,20 @@ async def async_setup_webhook(
         coordinator.async_signal_webhook()
 
     webhook.async_register(
-        hass, DOMAIN, "Netatmo Energy", webhook_id, _handle, local_only=False
+        hass, DOMAIN, "NET-TRV", webhook_id, _handle, local_only=False
     )
     entry.async_on_unload(lambda: webhook.async_unregister(hass, webhook_id))
 
     if secret is None:
         state.last_error = "client secret unavailable; webhook not registered"
-        _LOGGER.warning("Netatmo Energy: %s", state.last_error)
+        _LOGGER.warning("NET-TRV: %s", state.last_error)
         coordinator.async_signal_webhook()
         return
 
     url = await _async_webhook_url(hass, entry, webhook_id)
     if url is None:
         state.last_error = "no public HTTPS URL (Nabu Casa or external URL needed)"
-        _LOGGER.warning("Netatmo Energy webhook not registered: %s", state.last_error)
+        _LOGGER.warning("NET-TRV webhook not registered: %s", state.last_error)
         coordinator.async_signal_webhook()
         return
 
@@ -157,11 +157,11 @@ async def async_setup_webhook(
         await coordinator.auth.async_addwebhook(url)
     except (ApiError, TimeoutError) as err:
         state.last_error = f"registration failed: {err}"
-        _LOGGER.warning("Netatmo Energy webhook %s", state.last_error)
+        _LOGGER.warning("NET-TRV webhook %s", state.last_error)
     else:
         state.registered = True
         state.last_error = None
-        _LOGGER.info("Netatmo Energy webhook registered")
+        _LOGGER.info("NET-TRV webhook registered")
     coordinator.async_signal_webhook()
 
 

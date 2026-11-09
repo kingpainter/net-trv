@@ -4,6 +4,13 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.1] - 2026-11-09
+
+### Changed
+- Display name is now **NET-TRV** (domain stays `netatmo_energy`, so existing
+  installs, entities and credentials keep working; rename the existing entry
+  in the UI if you want the new title there too).
+
 ## [0.3.0] - 2026-11-09
 
 ### Added

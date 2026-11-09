@@ -1,4 +1,4 @@
-"""Shared fixtures for Netatmo Energy tests."""
+"""Shared fixtures for NET-TRV tests."""
 
 from __future__ import annotations
 
@@ -63,7 +63,7 @@ def config_entry() -> MockConfigEntry:
     """A config entry holding a valid token."""
     return MockConfigEntry(
         domain=DOMAIN,
-        title="Netatmo Energy",
+        title="NET-TRV",
         data={
             "auth_implementation": DOMAIN,
             "token": {

@@ -1,11 +1,12 @@
-# Netatmo Energy
+# NET-TRV
 
 [![Validate](https://github.com/OWNER/netatmo-energy/actions/workflows/validate.yml/badge.svg)](https://github.com/OWNER/netatmo-energy/actions/workflows/validate.yml)
 [![Lint and tests](https://github.com/OWNER/netatmo-energy/actions/workflows/tests.yml/badge.svg)](https://github.com/OWNER/netatmo-energy/actions/workflows/tests.yml)
 
-A Home Assistant custom integration for the Netatmo thermostat relay (NAPlug)
-and Netatmo smart radiator valves (NRV). It focuses only on heating and aims
-to expose everything the Netatmo Energy API offers for those devices.
+NET-TRV is a Home Assistant custom integration for the Netatmo thermostat
+relay (NAPlug) and Netatmo smart radiator valves (NRV). It focuses only on
+heating and aims to expose everything the Netatmo Energy API offers for those
+devices.
 
 > Not affiliated with or endorsed by Netatmo.
 
@@ -21,7 +22,7 @@ to expose everything the Netatmo Energy API offers for those devices.
   so it does not share rate limits or the webhook with the core `netatmo`
   integration.
 
-## Features (0.3.0)
+## Features (0.3.1)
 
 | Feature | Status |
 | --- | --- |
@@ -46,7 +47,7 @@ to expose everything the Netatmo Energy API offers for those devices.
 
 1. HACS → Integrations → ⋮ → Custom repositories → add this repository as
    *Integration*.
-2. Install **Netatmo Energy** and restart Home Assistant.
+2. Install **NET-TRV** and restart Home Assistant.
 
 ### Manual
 
@@ -58,8 +59,8 @@ restart Home Assistant.
 1. In your Netatmo app on dev.netatmo.com, set the redirect URI to
    `https://my.home-assistant.io/redirect/oauth`.
 2. Settings → Devices & services → ⋮ → **Application credentials** → add the
-   client id and secret for *Netatmo Energy*.
-3. Settings → Devices & services → **Add integration** → *Netatmo Energy* and
+   client id and secret for *NET-TRV*.
+3. Settings → Devices & services → **Add integration** → *NET-TRV* and
    sign in to Netatmo.
 
 ## Entities

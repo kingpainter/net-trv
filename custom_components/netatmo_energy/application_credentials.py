@@ -1,5 +1,5 @@
-"""Application credentials platform for Netatmo Energy."""
-# VERSION = "0.3.0"
+"""Application credentials platform for NET-TRV."""
+# VERSION = "0.3.1"
 
 from __future__ import annotations
 

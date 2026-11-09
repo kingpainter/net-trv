@@ -6,7 +6,7 @@
       },
       "reauth_confirm": {
         "title": "Re-authenticate integration",
-        "description": "Netatmo Energy needs you to sign in to Netatmo again."
+        "description": "NET-TRV needs you to sign in to Netatmo again."
       }
     },
     "abort": {

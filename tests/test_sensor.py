@@ -1,4 +1,4 @@
-"""Tests for the Netatmo Energy sensor and binary_sensor platforms."""
+"""Tests for the NET-TRV sensor and binary_sensor platforms."""
 
 from __future__ import annotations
 

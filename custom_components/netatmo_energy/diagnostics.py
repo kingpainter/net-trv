@@ -1,5 +1,5 @@
-"""Diagnostics for Netatmo Energy (Settings > Devices > Download diagnostics)."""
-# VERSION = "0.3.0"
+"""Diagnostics for NET-TRV (Settings > Devices > Download diagnostics)."""
+# VERSION = "0.3.1"
 
 from __future__ import annotations
 

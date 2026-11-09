@@ -1,5 +1,5 @@
-"""Connectivity binary sensors for Netatmo Energy valves and the relay."""
-# VERSION = "0.3.0"
+"""Connectivity binary sensors for NET-TRV valves and the relay."""
+# VERSION = "0.3.1"
 
 from __future__ import annotations
 

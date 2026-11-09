@@ -6,7 +6,7 @@
       },
       "reauth_confirm": {
         "title": "Godkend integrationen igen",
-        "description": "Netatmo Energy skal have dig til at logge ind hos Netatmo igen."
+        "description": "NET-TRV skal have dig til at logge ind hos Netatmo igen."
       }
     },
     "abort": {

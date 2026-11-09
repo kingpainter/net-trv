@@ -1,1 +1,1 @@
-"""Tests for Netatmo Energy."""
+"""Tests for NET-TRV."""

@@ -1,5 +1,5 @@
-"""Climate entities for Netatmo Energy: one per Netatmo room."""
-# VERSION = "0.3.0"
+"""Climate entities for NET-TRV: one per Netatmo room."""
+# VERSION = "0.3.1"
 
 from __future__ import annotations
 
