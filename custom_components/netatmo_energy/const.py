@@ -1,5 +1,5 @@
 """Constants for the NET-TRV integration."""
-# VERSION = "0.4.0"
+# VERSION = "0.5.0"
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from datetime import timedelta
 from typing import Final
 
 DOMAIN: Final = "netatmo_energy"
-VERSION: Final = "0.4.0"
+VERSION: Final = "0.5.0"
 MANUFACTURER: Final = "Netatmo"
 
 OAUTH2_AUTHORIZE: Final = "https://api.netatmo.com/oauth2/authorize"
@@ -38,6 +38,13 @@ CONFIRM_DELAY_SECONDS: Final = 5
 # payloads to keep for diagnostics.
 CONF_CLOUDHOOK_URL: Final = "cloudhook_url"
 WEBHOOK_BUFFER_SIZE: Final = 50
+
+# Public weather (/getpublicdata) from nearby stations. Ten minutes matches
+# how often Netatmo stations upload; 6 calls/hour of the 500 budget.
+WEATHER_INTERVAL: Final = timedelta(minutes=10)
+CONF_WEATHER_ENABLED: Final = "weather_enabled"
+CONF_WEATHER_LOCATION: Final = "weather_location"
+DEFAULT_WEATHER_RADIUS: Final = 1000.0
 
 # Netatmo per-user limits (dev.netatmo.com/guideline): 50 per 10 s, 500 per hour.
 RATE_LIMIT_PER_HOUR: Final = 500

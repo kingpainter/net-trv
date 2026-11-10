@@ -4,6 +4,28 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] - 2026-11-10
+
+### Added
+- Public weather from nearby Netatmo stations (`/getpublicdata`) on a
+  separate service device: temperature, humidity, pressure, precipitation
+  (now, last hour, last 24 h), wind speed, gusts, wind direction and the
+  number of stations. Values are the median of the area; wind direction is a
+  circular mean. Polled every 10 minutes on its own coordinator.
+- Options flow to choose the area (circle on a map, default 1 km around the
+  home) or switch public weather off; saving reloads the entry.
+- Diagnostics: public weather block (area size, station counts, values).
+
+## [0.4.1] - 2026-11-10
+
+### Fixed
+- Repeat filter only drops duplicates within 2 minutes. Before, a genuine
+  later repeat of a home mode change (which carries no timestamp) was
+  ignored until the next poll.
+- Setpoint changes (`display_change`, no timestamp) are now confirmed with a
+  debounced `/homestatus` read, so a late or reordered delivery cannot leave a
+  room on a stale setpoint.
+
 ## [0.4.0] - 2026-11-10
 
 ### Added

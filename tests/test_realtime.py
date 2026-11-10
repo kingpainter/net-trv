@@ -107,6 +107,25 @@ def test_event_filter_drops_repeats_and_older_events() -> None:
     assert f.accept(other_room)
 
 
+def test_event_filter_repeat_window() -> None:
+    """A mode change without ts may genuinely repeat later and must pass."""
+    now = [0.0]
+    f = EventFilter(window=120, clock=lambda: now[0])
+    mode = {
+        "push_type": "home_event_changed",
+        "home_id": "home1",
+        "event_type": "therm_mode",
+        "home": {"id": "home1", "therm_mode": "schedule"},
+        "mode": "schedule",
+        "previous_mode": "away",
+    }
+    assert f.accept(mode)
+    now[0] = 60
+    assert not f.accept(mode)  # duplicate delivery
+    now[0] = 200
+    assert f.accept(mode)  # same change again, minutes later
+
+
 def test_valve_position_parsing() -> None:
     payload = _device_event(
         event_type="motor_data_event",
@@ -271,6 +290,50 @@ async def test_nested_home_mode_event_updates_home(
 
     coordinator = config_entry.runtime_data
     assert coordinator.account.homes["home1"].therm_mode == "away"
+
+
+async def test_display_change_is_confirmed_by_status(
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+    mock_api: AsyncMock,
+    hass_client_no_auth: Any,
+) -> None:
+    """Setpoint events carry no ts, so a status read settles their order."""
+    webhook_id = await _setup(hass, config_entry)
+    client = await hass_client_no_auth()
+    coordinator = config_entry.runtime_data
+    confirms: list[None] = []
+    coordinator.async_schedule_confirm = lambda: confirms.append(None)
+
+    await _push(
+        client,
+        webhook_id,
+        {
+            "push_type": "display_change",
+            "home_id": "home1",
+            "event_type": "setpoint_event",
+            "room_id": "1001",
+            "home": {
+                "id": "home1",
+                "rooms": [
+                    {
+                        "id": "1001",
+                        "therm_setpoint_mode": "home",
+                        "therm_setpoint_temperature": 21,
+                    }
+                ],
+            },
+        },
+    )
+    # Measured temperature alone needs no confirmation.
+    await _push(
+        client,
+        webhook_id,
+        _device_event(event_type="temperature_variation_event", room_id="1001", ts=5),
+    )
+    await hass.async_block_till_done()
+
+    assert len(confirms) == 1
 
 
 async def test_fresh_webhook_slows_polling(

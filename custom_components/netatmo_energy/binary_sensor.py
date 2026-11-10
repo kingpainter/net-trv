@@ -1,5 +1,5 @@
 """Connectivity binary sensors for NET-TRV valves and the relay."""
-# VERSION = "0.4.0"
+# VERSION = "0.5.0"
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 """The NET-TRV integration: Netatmo relay (NAPlug) and valves (NRV)."""
-# VERSION = "0.4.0"
+# VERSION = "0.5.0"
 
 from __future__ import annotations
 
@@ -19,7 +19,14 @@ from homeassistant.helpers.start import async_at_started
 from .api import NetatmoEnergyAuth
 from .const import DOMAIN
 from .coordinator import NetatmoEnergyConfigEntry, NetatmoEnergyCoordinator
-from .entity import relay_device_info, relay_of, room_identifier, valves_in
+from .entity import (
+    relay_device_info,
+    relay_of,
+    room_identifier,
+    valves_in,
+    weather_identifier,
+)
+from .weather import PublicWeatherCoordinator, weather_area
 from .webhook import async_remove_webhook, async_setup_webhook
 
 _LOGGER = logging.getLogger(__name__)
@@ -55,6 +62,12 @@ async def async_setup_entry(
     coordinator.oauth_implementation = implementation
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
+
+    # Public weather is optional and must never block heating: one attempt
+    # now, failures only make the weather sensors unavailable.
+    if (area := weather_area(hass, entry)) is not None:
+        coordinator.weather = PublicWeatherCoordinator(hass, entry, auth, area)
+        await coordinator.weather.async_refresh()
 
     _register_relays(hass, entry, coordinator)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -104,6 +117,8 @@ def _register_relays(
 def _expected_identifiers(coordinator: NetatmoEnergyCoordinator) -> set[str]:
     """Return the device identifiers this integration should currently own."""
     expected: set[str] = set()
+    if coordinator.weather is not None:
+        expected.add(weather_identifier(coordinator.config_entry))
     for home in coordinator.homes:
         if (relay := relay_of(home)) is not None:
             expected.add(relay.entity_id)

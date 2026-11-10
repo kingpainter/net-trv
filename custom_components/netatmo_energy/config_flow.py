@@ -1,5 +1,5 @@
 """Config flow for NET-TRV (OAuth2 against the user's own Netatmo app)."""
-# VERSION = "0.4.0"
+# VERSION = "0.5.0"
 
 from __future__ import annotations
 
@@ -10,11 +10,22 @@ from typing import Any, override
 from homeassistant.config_entries import (
     SOURCE_REAUTH,
     SOURCE_RECONFIGURE,
+    ConfigEntry,
     ConfigFlowResult,
+    OptionsFlowWithReload,
 )
-from homeassistant.helpers import config_entry_oauth2_flow
+from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_RADIUS
+from homeassistant.core import callback
+from homeassistant.helpers import config_entry_oauth2_flow, selector
+import probatio as vol
 
-from .const import API_SCOPES, DOMAIN
+from .const import (
+    API_SCOPES,
+    CONF_WEATHER_ENABLED,
+    CONF_WEATHER_LOCATION,
+    DEFAULT_WEATHER_RADIUS,
+    DOMAIN,
+)
 
 
 class NetatmoEnergyFlowHandler(
@@ -33,6 +44,13 @@ class NetatmoEnergyFlowHandler(
     def logger(self) -> logging.Logger:
         """Return logger."""
         return logging.getLogger(__name__)
+
+    @staticmethod
+    @callback
+    @override
+    def async_get_options_flow(config_entry: ConfigEntry) -> NetatmoEnergyOptionsFlow:
+        """Return the options flow (public weather area)."""
+        return NetatmoEnergyOptionsFlow()
 
     @property
     @override
@@ -83,3 +101,35 @@ class NetatmoEnergyFlowHandler(
                 self._get_reconfigure_entry(), data_updates=data
             )
         return self.async_create_entry(title="NET-TRV", data=data)
+
+
+class NetatmoEnergyOptionsFlow(OptionsFlowWithReload):
+    """Choose whether and where to read public weather stations."""
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Show the weather options; saving reloads the entry."""
+        if user_input is not None:
+            return self.async_create_entry(data=user_input)
+
+        options = self.config_entry.options
+        location = options.get(CONF_WEATHER_LOCATION) or {
+            CONF_LATITUDE: self.hass.config.latitude,
+            CONF_LONGITUDE: self.hass.config.longitude,
+            CONF_RADIUS: DEFAULT_WEATHER_RADIUS,
+        }
+        schema = vol.Schema(
+            {
+                vol.Required(
+                    CONF_WEATHER_ENABLED,
+                    default=options.get(CONF_WEATHER_ENABLED, True),
+                ): selector.BooleanSelector(),
+                vol.Required(
+                    CONF_WEATHER_LOCATION, default=location
+                ): selector.LocationSelector(
+                    selector.LocationSelectorConfig(radius=True)
+                ),
+            }
+        )
+        return self.async_show_form(step_id="init", data_schema=schema)

@@ -113,7 +113,8 @@ async def test_device_tree(
     assert device("09:00:00:00:00:01") is None
     assert device("home1-1003") is None
     assert hass.states.get("climate.gang") is None
-    assert len(dr.async_entries_for_config_entry(registry, config_entry.entry_id)) == 3
+    # Relay, two rooms and the public weather service device.
+    assert len(dr.async_entries_for_config_entry(registry, config_entry.entry_id)) == 4
 
 
 async def test_stale_devices_are_removed(
@@ -136,7 +137,12 @@ async def test_stale_devices_are_removed(
         for device in dr.async_entries_for_config_entry(registry, config_entry.entry_id)
         for _, ident in device.identifiers
     }
-    assert remaining == {"70:ee:50:00:00:01", "home1-1001", "home1-1002"}
+    assert remaining == {
+        "70:ee:50:00:00:01",
+        "home1-1001",
+        "home1-1002",
+        f"{config_entry.entry_id}-public_weather",
+    }
 
 
 async def test_set_temperature_calls_setroomthermpoint(

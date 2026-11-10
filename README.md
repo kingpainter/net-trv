@@ -22,7 +22,7 @@ devices.
   so it does not share rate limits or the webhook with the core `netatmo`
   integration.
 
-## Features (0.4.0)
+## Features (0.5.0)
 
 | Feature | Status |
 | --- | --- |
@@ -32,6 +32,7 @@ devices.
 | Valve and relay diagnostics (battery, signal, firmware, connection) | ✅ |
 | Netatmo webhook: registered, signature-verified, events recorded | ✅ |
 | Real-time state from webhook events (temperature, demand, setpoint, home mode, valve position) | ✅ |
+| Public weather from nearby Netatmo stations (median of the area) | ✅ |
 | Schedule services and room history | Planned |
 
 ## Requirements
@@ -77,6 +78,19 @@ restart Home Assistant.
 | `sensor.<relay>_valves_online` | Reachable valves; attributes `total` and `offline`. |
 | `binary_sensor.<relay>_connectivity` | Relay reachable by Netatmo. |
 | `binary_sensor.<relay>_webhook` | Webhook registered with Netatmo; attributes `events_received`, `last_event`, `rejected_signatures`, `last_error`. |
+
+### Public weather
+
+A **Public weather** service device shows weather from public Netatmo
+stations around your home: temperature, humidity, pressure, precipitation
+(now, last hour, last 24 hours), wind speed, gusts and wind direction. Each
+value is the median of the stations in the area (wind direction a circular
+mean), and its `stations` attribute says how many stations reported it.
+
+Set the area under **Settings → Devices & services → NET-TRV → Configure**.
+The default is a 1 km circle around Home Assistant's home location; it can
+also be switched off there. It is read every 10 minutes (6 API calls per
+hour) on its own coordinator, so a weather outage never affects heating.
 
 ### Modes and presets
 

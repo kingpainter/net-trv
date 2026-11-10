@@ -87,6 +87,8 @@ def mock_api() -> Generator[AsyncMock]:
             body = load_fixture("homesdata.json")
         elif url.endswith("api/homestatus"):
             body = load_fixture("homestatus.json")
+        elif url.endswith("api/getpublicdata"):
+            body = load_fixture("publicdata.json")
         else:
             body = {"status": "ok", "time_server": 1762700000}
         resp = MagicMock()

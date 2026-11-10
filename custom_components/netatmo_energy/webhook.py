@@ -6,7 +6,7 @@ Every payload is verified
 suspends slow endpoints for up to 10 min), and kept in a short ring buffer for
 diagnostics, then merged into the model by the coordinator (phase 2).
 """
-# VERSION = "0.4.0"
+# VERSION = "0.5.0"
 
 from __future__ import annotations
 

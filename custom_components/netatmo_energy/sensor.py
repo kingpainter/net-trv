@@ -1,5 +1,5 @@
 """Diagnostic sensors for NET-TRV valves (on room devices) and the relay."""
-# VERSION = "0.4.0"
+# VERSION = "0.5.0"
 
 from __future__ import annotations
 
@@ -14,13 +14,19 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
+    DEGREE,
     PERCENTAGE,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
     EntityCategory,
+    UnitOfPrecipitationDepth,
+    UnitOfPressure,
+    UnitOfSpeed,
+    UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import StateType
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from pyatmo.home import Home
 from pyatmo.modules.module import Module
 
@@ -30,7 +36,9 @@ from .entity import (
     NetatmoEnergyValveEntity,
     relay_of,
     valves_in,
+    weather_device_info,
 )
+from .weather import PublicWeatherCoordinator
 
 PARALLEL_UPDATES = 0
 
@@ -146,6 +154,83 @@ RELAY_SENSORS: tuple[NetatmoModuleSensorDescription, ...] = (
 )
 
 
+def _weather(
+    key: str,
+    *,
+    translation_key: str | None = None,
+    device_class: SensorDeviceClass | None = None,
+    unit: str | None = None,
+    state_class: SensorStateClass = SensorStateClass.MEASUREMENT,
+) -> SensorEntityDescription:
+    return SensorEntityDescription(
+        key=key,
+        translation_key=translation_key,
+        device_class=device_class,
+        native_unit_of_measurement=unit,
+        state_class=state_class,
+    )
+
+
+# Netatmo public data units: C, %, mbar (= hPa), mm, km/h, degrees.
+WEATHER_SENSORS: tuple[SensorEntityDescription, ...] = (
+    _weather(
+        "temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        unit=UnitOfTemperature.CELSIUS,
+    ),
+    _weather("humidity", device_class=SensorDeviceClass.HUMIDITY, unit=PERCENTAGE),
+    _weather(
+        "pressure",
+        device_class=SensorDeviceClass.ATMOSPHERIC_PRESSURE,
+        unit=UnitOfPressure.HPA,
+    ),
+    _weather(
+        "rain_live",
+        translation_key="rain_live",
+        device_class=SensorDeviceClass.PRECIPITATION,
+        unit=UnitOfPrecipitationDepth.MILLIMETERS,
+    ),
+    _weather(
+        "rain_60min",
+        translation_key="rain_60min",
+        device_class=SensorDeviceClass.PRECIPITATION,
+        unit=UnitOfPrecipitationDepth.MILLIMETERS,
+    ),
+    _weather(
+        "rain_24h",
+        translation_key="rain_24h",
+        device_class=SensorDeviceClass.PRECIPITATION,
+        unit=UnitOfPrecipitationDepth.MILLIMETERS,
+    ),
+    _weather(
+        "wind_strength",
+        translation_key="wind_strength",
+        device_class=SensorDeviceClass.WIND_SPEED,
+        unit=UnitOfSpeed.KILOMETERS_PER_HOUR,
+    ),
+    _weather(
+        "gust_strength",
+        translation_key="gust_strength",
+        device_class=SensorDeviceClass.WIND_SPEED,
+        unit=UnitOfSpeed.KILOMETERS_PER_HOUR,
+    ),
+    _weather(
+        "wind_angle",
+        translation_key="wind_angle",
+        device_class=SensorDeviceClass.WIND_DIRECTION,
+        unit=DEGREE,
+        state_class=SensorStateClass.MEASUREMENT_ANGLE,
+    ),
+)
+
+WEATHER_STATIONS = SensorEntityDescription(
+    key="stations",
+    translation_key="weather_stations",
+    state_class=SensorStateClass.MEASUREMENT,
+    entity_category=EntityCategory.DIAGNOSTIC,
+)
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: NetatmoEnergyConfigEntry,
@@ -174,6 +259,11 @@ async def async_setup_entry(
                 for desc in RELAY_SENSORS
             )
             entities.append(NetatmoValvesOnlineSensor(coordinator, home, relay))
+    if (weather := coordinator.weather) is not None:
+        entities.extend(
+            NetatmoPublicWeatherSensor(weather, desc) for desc in WEATHER_SENSORS
+        )
+        entities.append(NetatmoWeatherStationsSensor(weather, WEATHER_STATIONS))
     async_add_entities(entities)
 
 
@@ -279,3 +369,65 @@ class NetatmoValvesOnlineSensor(NetatmoEnergyRelayEntity, SensorEntity):
             "total": len(valves),
             "offline": sorted(v.name for v in valves if not v.reachable),
         }
+
+
+class NetatmoPublicWeatherSensor(
+    CoordinatorEntity[PublicWeatherCoordinator], SensorEntity
+):
+    """One aggregated value from nearby public Netatmo stations."""
+
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        coordinator: PublicWeatherCoordinator,
+        description: SensorEntityDescription,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self.entity_description = description
+        entry = coordinator.config_entry
+        self._attr_unique_id = f"{entry.entry_id}-public_weather-{description.key}"
+        self._attr_device_info = weather_device_info(entry)
+
+    @property
+    @override
+    def available(self) -> bool:
+        return super().available and self.native_value is not None
+
+    @property
+    @override
+    def native_value(self) -> float | int | None:
+        data = self.coordinator.data
+        return None if data is None else data.values.get(self.entity_description.key)
+
+    @property
+    @override
+    def extra_state_attributes(self) -> dict[str, Any]:
+        data = self.coordinator.data
+        return {
+            "stations": 0
+            if data is None
+            else data.counts.get(self.entity_description.key, 0)
+        }
+
+
+class NetatmoWeatherStationsSensor(NetatmoPublicWeatherSensor):
+    """How many public stations answered for the area."""
+
+    @property
+    @override
+    def available(self) -> bool:
+        return self.coordinator.last_update_success
+
+    @property
+    @override
+    def native_value(self) -> int | None:
+        data = self.coordinator.data
+        return None if data is None else data.stations
+
+    @property
+    @override
+    def extra_state_attributes(self) -> dict[str, Any]:
+        # Size only; the corners would reveal the home's location.
+        return {"area_km": self.coordinator.area.size_km()}

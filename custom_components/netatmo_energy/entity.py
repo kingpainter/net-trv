@@ -5,16 +5,18 @@ Device tree in Home Assistant:
     Relay (NAPlug, hub; area = the Netatmo room it sits in)
     └── Room (one per Netatmo room WITH a valve; holds the climate entity and,
         from step 1b, the diagnostics of the valve(s) in that room)
+    Public weather (service device, nearby stations; 0.5.0)
 
 Valves are not separate devices: with one valve per room the room *is* the
 valve for the user, and separate devices would leave rooms or valves without
 entities.
 """
-# VERSION = "0.4.0"
+# VERSION = "0.5.0"
 
 from __future__ import annotations
 
-from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from pyatmo.home import Home
@@ -52,6 +54,22 @@ def room_of(home: Home, module: Module) -> Room | None:
 def room_identifier(room: Room) -> str:
     """Return the device identifier used for a room."""
     return f"{room.home.entity_id}-{room.entity_id}"
+
+
+def weather_identifier(entry: ConfigEntry) -> str:
+    """Return the device identifier of the public weather service device."""
+    return f"{entry.entry_id}-public_weather"
+
+
+def weather_device_info(entry: ConfigEntry) -> DeviceInfo:
+    """Device info for public weather (a service, not hardware)."""
+    return DeviceInfo(
+        identifiers={(DOMAIN, weather_identifier(entry))},
+        entry_type=DeviceEntryType.SERVICE,
+        manufacturer=MANUFACTURER,
+        model="Public weather stations",
+        translation_key="public_weather",
+    )
 
 
 def _firmware(module: Module) -> str | None:

@@ -1,0 +1,42 @@
+{
+  "status": "ok",
+  "time_server": 1794336000,
+  "body": [
+    {
+      "_id": "70:ee:50:aa:00:01",
+      "place": {"altitude": 40, "country": "DK", "timezone": "Europe/Copenhagen", "location": [10.2, 56.2]},
+      "mark": 10,
+      "measures": {
+        "70:ee:50:aa:00:01": {"res": {"1794335900": [1008.4]}, "type": ["pressure"]},
+        "02:00:00:aa:00:01": {"res": {"1794335000": [5.0, 90], "1794335900": [6.8, 92]}, "type": ["temperature", "humidity"]},
+        "05:00:00:aa:00:01": {"rain_60min": 0.2, "rain_24h": 1.1, "rain_live": 0, "rain_timeutc": 1794335900},
+        "06:00:00:aa:00:01": {"wind_strength": 3, "wind_angle": 350, "gust_strength": 8, "gust_angle": 340, "wind_timeutc": 1794335900}
+      },
+      "modules": ["02:00:00:aa:00:01", "05:00:00:aa:00:01", "06:00:00:aa:00:01"],
+      "module_types": {"02:00:00:aa:00:01": "NAModule1", "05:00:00:aa:00:01": "NAModule3", "06:00:00:aa:00:01": "NAModule2"}
+    },
+    {
+      "_id": "70:ee:50:aa:00:02",
+      "place": {"altitude": 45, "country": "DK", "timezone": "Europe/Copenhagen", "location": [10.21, 56.21]},
+      "mark": 10,
+      "measures": {
+        "70:ee:50:aa:00:02": {"res": {"1794335800": [1008.8]}, "type": ["pressure"]},
+        "02:00:00:aa:00:02": {"res": {"1794335800": [7.2, 93]}, "type": ["temperature", "humidity"]},
+        "06:00:00:aa:00:02": {"wind_strength": 2, "wind_angle": 10, "gust_strength": 6, "gust_angle": 20, "wind_timeutc": 1794335800}
+      },
+      "modules": ["02:00:00:aa:00:02", "06:00:00:aa:00:02"],
+      "module_types": {"02:00:00:aa:00:02": "NAModule1", "06:00:00:aa:00:02": "NAModule2"}
+    },
+    {
+      "_id": "70:ee:50:aa:00:03",
+      "place": {"altitude": 30, "country": "DK", "timezone": "Europe/Copenhagen", "location": [10.19, 56.19]},
+      "mark": 7,
+      "measures": {
+        "70:ee:50:aa:00:03": {"res": {"1794335700": [1008.0]}, "type": ["pressure"]},
+        "02:00:00:aa:00:03": {"res": {"1794335700": [6.5, 91]}, "type": ["temperature", "humidity"]}
+      },
+      "modules": ["02:00:00:aa:00:03"],
+      "module_types": {"02:00:00:aa:00:03": "NAModule1"}
+    }
+  ]
+}

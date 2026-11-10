@@ -1,5 +1,5 @@
 """Application credentials platform for NET-TRV."""
-# VERSION = "0.4.0"
+# VERSION = "0.5.0"
 
 from __future__ import annotations
 

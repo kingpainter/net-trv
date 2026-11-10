@@ -1,5 +1,5 @@
 """Diagnostics for NET-TRV (Settings > Devices > Download diagnostics)."""
-# VERSION = "0.4.0"
+# VERSION = "0.5.0"
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant
 from pyatmo.const import WEBHOOK_ENDPOINT
 
 from .const import CONF_CLOUDHOOK_URL
-from .coordinator import NetatmoEnergyConfigEntry
+from .coordinator import NetatmoEnergyConfigEntry, NetatmoEnergyCoordinator
 from .entity import relay_of, valves_in
 
 TO_REDACT = {
@@ -78,6 +78,7 @@ async def async_get_config_entry_diagnostics(
         "entry": async_redact_data(dict(entry.data), TO_REDACT),
         "api_calls_last_hour": coordinator.auth.calls_last_hour,
         "homes": homes,
+        "public_weather": _weather(coordinator),
         "webhook": {
             "registered": state.registered,
             "our_url_ends_with": _tail(entry.data.get(CONF_CLOUDHOOK_URL)),
@@ -108,4 +109,19 @@ async def async_get_config_entry_diagnostics(
             # personal fields.
             "recent": async_redact_data(list(state.recent), TO_REDACT),
         },
+    }
+
+
+def _weather(coordinator: NetatmoEnergyCoordinator) -> dict[str, Any] | None:
+    """Station counts and values; the area itself is location data."""
+    weather = coordinator.weather
+    if weather is None:
+        return None
+    data = weather.data
+    return {
+        "last_update_success": weather.last_update_success,
+        "area_km": weather.area.size_km(),
+        "stations": None if data is None else data.stations,
+        "values": None if data is None else data.values,
+        "counts": None if data is None else data.counts,
     }

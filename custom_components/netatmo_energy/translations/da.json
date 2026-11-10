@@ -96,6 +96,27 @@
       },
       "valve_position_multi": {
         "name": "Ventilposition {valve}"
+      },
+      "rain_live": {
+        "name": "Nedbør"
+      },
+      "rain_60min": {
+        "name": "Nedbør seneste time"
+      },
+      "rain_24h": {
+        "name": "Nedbør seneste 24 timer"
+      },
+      "wind_strength": {
+        "name": "Vindhastighed"
+      },
+      "gust_strength": {
+        "name": "Vindstød"
+      },
+      "wind_angle": {
+        "name": "Vindretning"
+      },
+      "weather_stations": {
+        "name": "Stationer i området"
       }
     },
     "binary_sensor": {
@@ -119,6 +140,29 @@
     },
     "api_error": {
       "message": "Netatmo afviste forespørgslen: {error}"
+    },
+    "public_weather_failed": {
+      "message": "Kunne ikke hente offentligt vejr fra Netatmo: {error}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Offentligt vejr",
+        "description": "NET-TRV kan vise vejret fra offentlige Netatmo-stationer i nærheden. Værdien er medianen af alle stationer i cirklen, så én dårligt placeret station ikke trækker skævt. En større cirkel giver flere stationer, men mindre lokalt vejr.",
+        "data": {
+          "weather_enabled": "Vis offentligt vejr",
+          "weather_location": "Område"
+        },
+        "data_description": {
+          "weather_location": "Stationer inden for cirklen bruges. 1 km er en god start i byen; brug mere på landet."
+        }
+      }
+    }
+  },
+  "device": {
+    "public_weather": {
+      "name": "Offentligt vejr"
     }
   }
 }

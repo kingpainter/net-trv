@@ -5,7 +5,7 @@ straight from its ``Home``/``Room``/``Module`` objects. Webhook events are
 merged into it as they arrive (phase 2); polling reconciles, at 300 s while
 the webhook is alive and 60 s when it has gone quiet.
 """
-# VERSION = "0.4.0"
+# VERSION = "0.5.0"
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 import logging
 from time import monotonic
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from aiohttp import ClientResponseError
 from homeassistant.config_entries import ConfigEntry
@@ -36,6 +36,9 @@ from pyatmo.home import Home
 from pyatmo.schedule import Schedule
 from pyatmo.webhook import RefreshScope, process_webhook
 
+if TYPE_CHECKING:
+    from .weather import PublicWeatherCoordinator
+
 from .api import NetatmoEnergyAuth
 from .const import (
     CONFIRM_DELAY_SECONDS,
@@ -49,6 +52,7 @@ from .const import (
     WEBHOOK_STALE_AFTER,
 )
 from .realtime import (
+    DISPLAY_CHANGE,
     LIFECYCLE_PUSH_TYPES,
     EventFilter,
     ValvePosition,
@@ -143,6 +147,8 @@ class NetatmoEnergyCoordinator(DataUpdateCoordinator[None]):
         # Set by async_setup_entry; the webhook needs its client secret.
         self.oauth_implementation: object | None = None
         self._topology_at: float | None = None
+        # Public weather has its own coordinator (set in __init__.py).
+        self.weather: PublicWeatherCoordinator | None = None
         self._confirm_unsub: CALLBACK_TYPE | None = None
         self._unreachable_logged: set[str] = set()
         self._event_filter = EventFilter()
@@ -250,7 +256,9 @@ class NetatmoEnergyCoordinator(DataUpdateCoordinator[None]):
         self.webhook.applied_by_type[key] = self.webhook.applied_by_type.get(key, 0) + 1
         if RefreshScope.TOPOLOGY in result.refresh_scope:
             self._topology_at = None
-        if result.refresh_scope:
+        # Setpoints only come from display_change, which has no timestamp, so
+        # order cannot be checked; a debounced /homestatus read settles it.
+        if result.refresh_scope or payload.get("push_type") == DISPLAY_CHANGE:
             self.async_schedule_confirm()
         # The fresh webhook can slow polling down right away.
         self.update_interval = self._poll_interval()

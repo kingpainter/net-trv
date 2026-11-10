@@ -10,20 +10,26 @@ from a NAPlug + NRV home (2026-11-10):
 * ``motor_data_event`` carries the valve motor position, which pyatmo only
   stores on shutters, not on valves.
 * Events carry no ``sequence_id``; Netatmo may repeat or reorder them, so we
-  drop exact repeats and events older than the last one for the same target.
+  drop exact repeats within a short window and events older than the last one
+  for the same target. The window matters: ``home_event_changed`` has no
+  timestamp, so a later, genuine repeat of the same mode change must pass.
+* ``display_change`` (the only source of setpoints) has no timestamp either;
+  the coordinator confirms those against ``/homestatus`` instead.
 """
-# VERSION = "0.4.0"
+# VERSION = "0.5.0"
 
 from __future__ import annotations
 
-from collections import deque
+from collections.abc import Callable
 from dataclasses import dataclass
 import hashlib
 import json
+from time import monotonic
 from typing import Any
 
 HOME_EVENT_CHANGED = "home_event_changed"
 DEVICE_EVENT = "device_event"
+DISPLAY_CHANGE = "display_change"
 MOTOR_DATA_EVENT = "motor_data_event"
 LIFECYCLE_PUSH_TYPES = frozenset({"webhook_activation", "webhook_deletion"})
 
@@ -94,25 +100,29 @@ def valve_position(payload: dict[str, Any]) -> tuple[str, ValvePosition] | None:
 
 
 class EventFilter:
-    """Drop exact repeats and out-of-order events per target."""
+    """Drop repeats within a short window and out-of-order events per target."""
 
-    def __init__(self, memory: int = 200) -> None:
+    def __init__(
+        self, window: float = 120.0, clock: Callable[[], float] = monotonic
+    ) -> None:
         """Initialize the filter."""
-        self._seen: deque[str] = deque(maxlen=memory)
-        self._seen_set: set[str] = set()
+        self._window = window
+        self._clock = clock
+        self._seen: dict[str, float] = {}
         self._last_ts: dict[tuple[str, str], int] = {}
 
     def accept(self, payload: dict[str, Any]) -> bool:
         """Return True when the payload is new and not older than its target."""
+        now = self._clock()
+        self._seen = {
+            digest: at for digest, at in self._seen.items() if now - at < self._window
+        }
         digest = hashlib.sha256(
             json.dumps(payload, sort_keys=True, default=str).encode()
         ).hexdigest()
-        if digest in self._seen_set:
+        if digest in self._seen:
             return False
-        if len(self._seen) == self._seen.maxlen:
-            self._seen_set.discard(self._seen[0])
-        self._seen.append(digest)
-        self._seen_set.add(digest)
+        self._seen[digest] = now
 
         target, ts = event_target(payload), event_ts(payload)
         if target is None or ts is None:

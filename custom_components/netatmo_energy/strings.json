@@ -96,6 +96,27 @@
       },
       "valve_position_multi": {
         "name": "Valve position {valve}"
+      },
+      "rain_live": {
+        "name": "Precipitation"
+      },
+      "rain_60min": {
+        "name": "Precipitation last hour"
+      },
+      "rain_24h": {
+        "name": "Precipitation last 24 hours"
+      },
+      "wind_strength": {
+        "name": "Wind speed"
+      },
+      "gust_strength": {
+        "name": "Gust speed"
+      },
+      "wind_angle": {
+        "name": "Wind direction"
+      },
+      "weather_stations": {
+        "name": "Stations in area"
       }
     },
     "binary_sensor": {
@@ -119,6 +140,29 @@
     },
     "api_error": {
       "message": "Netatmo rejected the request: {error}"
+    },
+    "public_weather_failed": {
+      "message": "Could not read public weather from Netatmo: {error}"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Public weather",
+        "description": "NET-TRV can show weather from public Netatmo stations near you. The value shown is the median of all stations inside the circle, so one badly placed station does not skew it. A larger circle gives more stations but less local weather.",
+        "data": {
+          "weather_enabled": "Show public weather",
+          "weather_location": "Area"
+        },
+        "data_description": {
+          "weather_location": "Stations inside this circle are used. 1 km is a good start in a city; use more in the countryside."
+        }
+      }
+    }
+  },
+  "device": {
+    "public_weather": {
+      "name": "Public weather"
     }
   }
 }
