@@ -1,3 +1,5 @@
+<p align="center"><img src="custom_components/net_trv/brand/icon@2x.png" width="160" alt="NET-TRV"></p>
+
 # NET-TRV
 
 [![Release](https://img.shields.io/github/v/release/kingpainter/net-trv?include_prereleases&sort=semver)](https://github.com/kingpainter/net-trv/releases)
@@ -6,7 +8,7 @@
 [![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Validate](https://github.com/kingpainter/net-trv/actions/workflows/validate.yml/badge.svg)](https://github.com/kingpainter/net-trv/actions/workflows/validate.yml)
 [![Lint and tests](https://github.com/kingpainter/net-trv/actions/workflows/tests.yml/badge.svg)](https://github.com/kingpainter/net-trv/actions/workflows/tests.yml)
-[![Quality scale](https://img.shields.io/badge/quality%20scale-silver%20(target)-C0C0C0)](quality_scale.yaml)
+[![Quality scale](https://img.shields.io/badge/quality%20scale-platinum%20(target)-E5E4E2)](quality_scale.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 NET-TRV is a Home Assistant custom integration for the Netatmo thermostat
@@ -33,7 +35,7 @@ real-time updates through Netatmo's webhook.
   so it does not share rate limits or the webhook with the core `netatmo`
   integration. Typical use: about 15 API calls per hour of the 500 allowed.
 
-## Features (0.9.1)
+## Features (0.9.2)
 
 | Feature | Status |
 | --- | --- |

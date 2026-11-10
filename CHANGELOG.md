@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.9.2] - 2026-11-10
+
+### Docs
+- README shows the NET-TRV icon at the top; quality scale badge targets
+  Platinum.
+- `quality_scale.yaml` covers all 54 rules (Bronze to Platinum) with status;
+  remaining work planned for 0.10.0 (Silver) and 0.11.0 (Gold).
+
 ## [0.9.1] - 2026-11-10
 
 ### Added

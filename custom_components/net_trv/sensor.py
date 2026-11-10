@@ -1,5 +1,5 @@
 """Diagnostic sensors for NET-TRV valves (on room devices) and the relay."""
-# VERSION = "0.9.1"
+# VERSION = "0.9.2"
 
 from __future__ import annotations
 

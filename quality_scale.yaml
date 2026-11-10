@@ -1,29 +1,37 @@
 # Integration Quality Scale status for net_trv.
-# Target: Silver. Values: done | todo | exempt (with comment).
+# Rules: https://contributors.home-assistant.io/core/quality-scale/
+# Target: Platinum (Silver in 0.10.0, Gold in 0.11.0).
+# Values: done | todo | exempt (with comment).
 rules:
   # Bronze
   action-setup: done
   appropriate-polling: done
   brands:
-    status: exempt
-    comment: Custom integration, no brands entry.
+    status: done
+    comment: Custom integration; icons ship in custom_components/net_trv/brand.
   common-modules: done
-  config-flow-test-coverage: done
   config-flow: done
+  config-flow-test-coverage: done
   dependency-transparency: done
   docs-actions: done
+  docs-conditions:
+    status: exempt
+    comment: No device conditions.
   docs-high-level-description: done
   docs-installation-instructions: done
   docs-removal-instructions: done
+  docs-triggers:
+    status: exempt
+    comment: No device triggers.
   entity-event-setup:
     status: exempt
-    comment: Entities do not subscribe to events.
+    comment: Entities only follow the coordinator; no own event subscriptions.
   entity-unique-id: done
   has-entity-name: done
   runtime-data: done
   test-before-configure:
     status: todo
-    comment: OAuth flow does not call the API before creating the entry yet.
+    comment: OAuth flow does not call the API before creating the entry yet (0.10.0).
   test-before-setup: done
   unique-config-entry: done
 
@@ -37,13 +45,54 @@ rules:
   log-when-unavailable: done
   parallel-updates: done
   reauthentication-flow: done
-  test-coverage: todo
+  test-coverage:
+    status: todo
+    comment: 92 % (2026-11-10); weakest webhook.py, api.py, coordinator.py (0.10.0).
 
-  # Gold / Platinum (tracked, not targeted yet)
+  # Gold
   devices: done
   diagnostics: done
+  discovery:
+    status: exempt
+    comment: Cloud account (OAuth); the relay cannot be discovered for the Netatmo API.
+  discovery-update-info:
+    status: exempt
+    comment: No discovery.
+  docs-data-update:
+    status: todo
+    comment: Webhook and polling are described, but not in one dedicated section (0.11.0).
+  docs-examples:
+    status: todo
+    comment: Automation examples missing (0.11.0).
+  docs-known-limitations: done
+  docs-supported-devices:
+    status: todo
+    comment: List NAPlug + NRV and unsupported devices explicitly (0.11.0).
+  docs-supported-functions: done
+  docs-troubleshooting: done
+  docs-use-cases:
+    status: todo
+    comment: Use cases missing (0.11.0).
+  dynamic-devices:
+    status: todo
+    comment: New rooms or valves need a reload (0.11.0).
+  entity-category: done
+  entity-device-class: done
+  entity-disabled-by-default:
+    status: todo
+    comment: Signal, firmware and valve position should be disabled by default (0.11.0).
   entity-translations: done
   exception-translations: done
-  inject-websession: done
+  icon-translations:
+    status: todo
+    comment: icons.json missing (0.11.0).
+  reconfiguration-flow: done
+  repair-issues:
+    status: todo
+    comment: e.g. issue when the webhook is not registered (0.11.0).
+  stale-devices: done
+
+  # Platinum
   async-dependency: done
+  inject-websession: done
   strict-typing: done

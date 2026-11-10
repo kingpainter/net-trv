@@ -5,7 +5,7 @@ straight from its ``Home``/``Room``/``Module`` objects. Webhook events are
 merged into it as they arrive (phase 2); polling reconciles, at 300 s while
 the webhook is alive and 60 s when it has gone quiet.
 """
-# VERSION = "0.9.1"
+# VERSION = "0.9.2"
 
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 """Away and frost guard temperatures of the active heating schedule."""
-# VERSION = "0.9.1"
+# VERSION = "0.9.2"
 
 from __future__ import annotations
 
