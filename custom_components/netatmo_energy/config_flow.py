@@ -1,5 +1,5 @@
 """Config flow for NET-TRV (OAuth2 against the user's own Netatmo app)."""
-# VERSION = "0.7.0"
+# VERSION = "0.8.0"
 
 from __future__ import annotations
 

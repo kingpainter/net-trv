@@ -1,5 +1,5 @@
 """Netatmo API authentication bound to a Home Assistant OAuth2 config entry."""
-# VERSION = "0.7.0"
+# VERSION = "0.8.0"
 
 from __future__ import annotations
 

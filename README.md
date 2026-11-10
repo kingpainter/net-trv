@@ -22,7 +22,7 @@ devices.
   so it does not share rate limits or the webhook with the core `netatmo`
   integration.
 
-## Features (0.7.0)
+## Features (0.8.0)
 
 | Feature | Status |
 | --- | --- |
@@ -35,7 +35,7 @@ devices.
 | Public weather from nearby Netatmo stations (median of the area) | ✅ |
 | Heating schedule select and the core netatmo heating actions (with end time) | ✅ |
 | Room history (`getroommeasure`) imported as long-term statistics | ✅ |
-| Schedule editing, away / frost guard temperatures | Planned (0.8.0) |
+| Schedule editing: away / frost guard temperatures, zone temperatures, rename, create | ✅ |
 
 ## Requirements
 
@@ -80,6 +80,7 @@ restart Home Assistant.
 | `sensor.<relay>_valves_online` | Reachable valves; attributes `total` and `offline`. |
 | `binary_sensor.<relay>_connectivity` | Relay reachable by Netatmo. |
 | `select.<relay>_heating_schedule` | Active Netatmo heating schedule (e.g. Sommer / Vinter); selecting one switches the whole home. |
+| `number.<relay>_away_temperature` / `_frost_guard_temperature` | Away and frost guard temperatures of the active schedule (config entities). |
 | `binary_sensor.<relay>_webhook` | Webhook registered with Netatmo; attributes `events_received`, `last_event`, `rejected_signatures`, `last_error`. |
 
 ### Actions
@@ -91,11 +92,19 @@ restart Home Assistant.
 | `netatmo_energy.set_temperature_with_end_datetime` | Manual setpoint until a time. |
 | `netatmo_energy.set_temperature_with_time_period` | Manual setpoint for a duration. |
 | `netatmo_energy.clear_temperature_setting` | Room back to the schedule. |
+| `netatmo_energy.set_schedule_temperature` | This room's temperature in one zone (e.g. Comfort) of a schedule. |
+| `netatmo_energy.rename_schedule` | Rename a schedule. |
+| `netatmo_energy.create_schedule` | New schedule as a copy of an existing one. |
 | `netatmo_energy.register_webhook` / `unregister_webhook` | Start or stop Netatmo's real-time events. |
 
 The first five target NET-TRV climate entities and match the core `netatmo`
 actions of the same name, so automations can be moved by changing the domain.
 Times without a time zone are Home Assistant local time.
+
+Schedule edits read the schedule fresh from Netatmo and send it back whole
+with only the requested change, because `synchomeschedule` replaces the full
+schedule. Deleting schedules is not offered: the endpoint is not documented
+and a delete cannot be undone; use the Netatmo app.
 
 ### Room history
 

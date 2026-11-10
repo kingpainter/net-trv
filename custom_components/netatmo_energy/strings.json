@@ -131,6 +131,14 @@
       "schedule": {
         "name": "Heating schedule"
       }
+    },
+    "number": {
+      "away_temp": {
+        "name": "Away temperature"
+      },
+      "frost_guard_temp": {
+        "name": "Frost guard temperature"
+      }
     }
   },
   "exceptions": {
@@ -160,6 +168,12 @@
     },
     "webhook_failed": {
       "message": "Webhook action failed: {error}"
+    },
+    "unknown_zone": {
+      "message": "Schedule \"{schedule}\" has no zone called \"{zone}\". Zones: {zones}."
+    },
+    "schedule_exists": {
+      "message": "A schedule called \"{schedule}\" already exists."
     }
   },
   "options": {
@@ -247,6 +261,52 @@
     "unregister_webhook": {
       "name": "Unregister webhook",
       "description": "Asks Netatmo to stop sending events. NET-TRV falls back to polling every 60 s."
+    },
+    "set_schedule_temperature": {
+      "name": "Set schedule temperature",
+      "description": "Changes this room's temperature in one zone (e.g. Comfort, Night) of a heating schedule. Netatmo applies it every time the zone is active.",
+      "fields": {
+        "zone_name": {
+          "name": "Zone",
+          "description": "Zone name as shown in the Netatmo app."
+        },
+        "temperature": {
+          "name": "Temperature",
+          "description": "7–30 °C."
+        },
+        "schedule_name": {
+          "name": "Schedule",
+          "description": "Leave empty for the active schedule."
+        }
+      }
+    },
+    "rename_schedule": {
+      "name": "Rename schedule",
+      "description": "Renames a Netatmo heating schedule.",
+      "fields": {
+        "schedule_name": {
+          "name": "Schedule",
+          "description": "Current name."
+        },
+        "new_name": {
+          "name": "New name",
+          "description": "New name for the schedule."
+        }
+      }
+    },
+    "create_schedule": {
+      "name": "Create schedule",
+      "description": "Creates a new heating schedule as a copy of an existing one. Edit it afterwards with Set schedule temperature or in the Netatmo app.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "Name of the new schedule."
+        },
+        "copy_from": {
+          "name": "Copy from",
+          "description": "Leave empty to copy the active schedule."
+        }
+      }
     }
   },
   "selector": {

@@ -8,7 +8,7 @@ Every station in the area reports its own value; we show the median, which
 ignores a station standing in the sun or against a wall. Wind direction uses
 a circular mean, since a median of angles breaks around north.
 """
-# VERSION = "0.7.0"
+# VERSION = "0.8.0"
 
 from __future__ import annotations
 

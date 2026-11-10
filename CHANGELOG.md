@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.8.0] - 2026-11-10
+
+### Added
+- Away and frost guard temperatures of the active schedule as number
+  entities on the relay.
+- Actions `set_schedule_temperature` (room temperature in a schedule zone),
+  `rename_schedule` and `create_schedule` (copy of an existing schedule).
+- Schedule edits read the schedule fresh and sync it back whole, keeping its
+  name; pyatmo's sync helper is not used because it renames to "Default".
+
 ## [0.7.0] - 2026-11-10
 
 ### Added

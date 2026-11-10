@@ -131,6 +131,14 @@
       "schedule": {
         "name": "Varmetidsplan"
       }
+    },
+    "number": {
+      "away_temp": {
+        "name": "Temperatur ved væk"
+      },
+      "frost_guard_temp": {
+        "name": "Frostsikringstemperatur"
+      }
     }
   },
   "exceptions": {
@@ -160,6 +168,12 @@
     },
     "webhook_failed": {
       "message": "Webhook-handlingen fejlede: {error}"
+    },
+    "unknown_zone": {
+      "message": "Tidsplanen \"{schedule}\" har ingen zone ved navn \"{zone}\". Zoner: {zones}."
+    },
+    "schedule_exists": {
+      "message": "Der findes allerede en tidsplan ved navn \"{schedule}\"."
     }
   },
   "options": {
@@ -247,6 +261,52 @@
     "unregister_webhook": {
       "name": "Afmeld webhook",
       "description": "Beder Netatmo stoppe med at sende hændelser. NET-TRV går tilbage til polling hvert 60. sekund."
+    },
+    "set_schedule_temperature": {
+      "name": "Sæt temperatur i tidsplan",
+      "description": "Ændrer rummets temperatur i én zone (fx Komfort, Nat) af en varmetidsplan. Netatmo bruger den hver gang zonen er aktiv.",
+      "fields": {
+        "zone_name": {
+          "name": "Zone",
+          "description": "Zonens navn som i Netatmo-appen."
+        },
+        "temperature": {
+          "name": "Temperatur",
+          "description": "7–30 °C."
+        },
+        "schedule_name": {
+          "name": "Tidsplan",
+          "description": "Lad stå tom for den aktive tidsplan."
+        }
+      }
+    },
+    "rename_schedule": {
+      "name": "Omdøb tidsplan",
+      "description": "Omdøber en Netatmo-varmetidsplan.",
+      "fields": {
+        "schedule_name": {
+          "name": "Tidsplan",
+          "description": "Nuværende navn."
+        },
+        "new_name": {
+          "name": "Nyt navn",
+          "description": "Tidsplanens nye navn."
+        }
+      }
+    },
+    "create_schedule": {
+      "name": "Opret tidsplan",
+      "description": "Opretter en ny varmetidsplan som kopi af en eksisterende. Ret den bagefter med Sæt temperatur i tidsplan eller i Netatmo-appen.",
+      "fields": {
+        "name": {
+          "name": "Navn",
+          "description": "Den nye tidsplans navn."
+        },
+        "copy_from": {
+          "name": "Kopiér fra",
+          "description": "Lad stå tom for at kopiere den aktive tidsplan."
+        }
+      }
     }
   },
   "selector": {

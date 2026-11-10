@@ -5,7 +5,7 @@ straight from its ``Home``/``Room``/``Module`` objects. Webhook events are
 merged into it as they arrive (phase 2); polling reconciles, at 300 s while
 the webhook is alive and 60 s when it has gone quiet.
 """
-# VERSION = "0.7.0"
+# VERSION = "0.8.0"
 
 from __future__ import annotations
 
@@ -271,6 +271,12 @@ class NetatmoEnergyCoordinator(DataUpdateCoordinator[None]):
     def async_signal_webhook(self) -> None:
         """Tell entities that the webhook state changed."""
         self.async_update_listeners()
+
+    @callback
+    def async_refresh_topology_soon(self) -> None:
+        """Re-read /homesdata (schedules) with the next confirm refresh."""
+        self._topology_at = None
+        self.async_schedule_confirm()
 
     @callback
     def async_schedule_confirm(self) -> None:

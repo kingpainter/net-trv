@@ -1,5 +1,5 @@
 """Climate entities for NET-TRV: one per Netatmo room."""
-# VERSION = "0.7.0"
+# VERSION = "0.8.0"
 
 from __future__ import annotations
 
@@ -41,6 +41,7 @@ from .const import (
 )
 from .coordinator import NetatmoEnergyConfigEntry, NetatmoEnergyCoordinator
 from .entity import NetatmoEnergyRoomEntity, valves_in
+from .schedules import async_edit_schedule, set_zone_temperature
 from .select import async_switch_schedule
 
 PARALLEL_UPDATES = 1
@@ -308,6 +309,21 @@ class NetatmoEnergyClimate(NetatmoEnergyRoomEntity, ClimateEntity):
         await self.async_service_set_temperature_with_end(
             target_temperature, dt_util.utcnow() + time_period
         )
+
+    async def async_service_set_schedule_temperature(
+        self, zone_name: str, temperature: float, schedule_name: str | None = None
+    ) -> None:
+        """Change this room's temperature in one zone of a schedule."""
+        room_id = self.room.entity_id
+        await async_edit_schedule(
+            self.coordinator.auth,
+            self.room.home.entity_id,
+            schedule_name,
+            lambda schedule: set_zone_temperature(
+                schedule, zone_name, room_id, temperature
+            ),
+        )
+        self.coordinator.async_refresh_topology_soon()
 
     async def async_service_clear_temperature_setting(self) -> None:
         """Drop the manual setpoint; the room follows the home again."""
