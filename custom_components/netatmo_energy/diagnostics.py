@@ -1,5 +1,5 @@
 """Diagnostics for NET-TRV (Settings > Devices > Download diagnostics)."""
-# VERSION = "0.3.3"
+# VERSION = "0.4.0"
 
 from __future__ import annotations
 
@@ -86,6 +86,21 @@ async def async_get_config_entry_diagnostics(
             "last_error": state.last_error,
             "events_received": state.events_received,
             "rejected_signatures": state.rejected_signatures,
+            "events_applied": state.events_applied,
+            "events_ignored": state.events_ignored,
+            "applied_by_type": dict(state.applied_by_type),
+            "fresh": state.fresh,
+            "poll_interval_s": coordinator.update_interval.total_seconds()
+            if coordinator.update_interval
+            else None,
+            "valve_positions": {
+                module_id: {
+                    "position": p.position,
+                    "motor_cmd": p.motor_cmd,
+                    "ts": p.ts,
+                }
+                for module_id, p in coordinator.valve_positions.items()
+            },
             "last_event": state.last_event_at.isoformat()
             if state.last_event_at
             else None,

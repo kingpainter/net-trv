@@ -4,6 +4,30 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] - 2026-11-10
+
+### Added
+- Real-time updates: verified webhook events are merged into the model as
+  they arrive (pyatmo `process_webhook`), so climate and sensors update within
+  seconds instead of on the next poll:
+  - measured room temperature (`temperature_variation_event`,
+    `setpoint_event`), 0.1 °C resolution
+  - heating demand and `hvac_action` (`heating_power_request_event`)
+  - setpoint, mode and end time (`display_change`)
+  - home mode (`home_event_changed`, both flat and nested shapes)
+- "Valve position" sensor per valve: raw motor position from
+  `motor_data_event` (webhook only; scale not documented by Netatmo), with
+  `motor_cmd` attribute.
+- Exact repeats and events older than the last one for the same room/valve are
+  ignored (Netatmo sends no `sequence_id`).
+- Adaptive polling: 300 s while webhook events arrive, back to 60 s after 15
+  minutes without events.
+- Webhook sensor attributes `events_applied` / `events_ignored`; diagnostics
+  show applied events per type, poll interval and valve positions.
+
+### Changed
+- `iot_class` is now `cloud_push`.
+
 ## [0.3.3] - 2026-11-10
 
 ### Fixed

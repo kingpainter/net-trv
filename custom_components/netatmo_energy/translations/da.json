@@ -90,6 +90,12 @@
       },
       "valves_online": {
         "name": "Ventiler online"
+      },
+      "valve_position": {
+        "name": "Ventilposition"
+      },
+      "valve_position_multi": {
+        "name": "Ventilposition {valve}"
       }
     },
     "binary_sensor": {

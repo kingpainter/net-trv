@@ -1,12 +1,12 @@
 """Netatmo webhook (v1) for NET-TRV.
 
-Step 1c only *receives and records* events: every payload is verified
+Every payload is verified
 (HMAC-SHA256 of the raw body with the app's client secret, sent in
 ``X-Netatmo-secret``), answered with 200 at once (Netatmo allows 5 s and
 suspends slow endpoints for up to 10 min), and kept in a short ring buffer for
-diagnostics. Merging events into state comes in phase 2.
+diagnostics, then merged into the model by the coordinator (phase 2).
 """
-# VERSION = "0.3.3"
+# VERSION = "0.4.0"
 
 from __future__ import annotations
 
@@ -137,6 +137,11 @@ async def async_setup_webhook(
             state.deleted_by_netatmo = True
         _LOGGER.debug("Netatmo webhook event: %s", push_type)
         coordinator.async_signal_webhook()
+        entry.async_create_background_task(
+            hass,
+            coordinator.async_apply_webhook(payload),
+            "netatmo_energy_apply_webhook",
+        )
 
     webhook.async_register(
         hass, DOMAIN, "NET-TRV", webhook_id, _handle, local_only=False

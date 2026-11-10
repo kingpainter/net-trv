@@ -90,6 +90,12 @@
       },
       "valves_online": {
         "name": "Valves online"
+      },
+      "valve_position": {
+        "name": "Valve position"
+      },
+      "valve_position_multi": {
+        "name": "Valve position {valve}"
       }
     },
     "binary_sensor": {

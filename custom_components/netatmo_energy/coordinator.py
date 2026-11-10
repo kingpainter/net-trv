@@ -1,17 +1,18 @@
 """Data coordinator for NET-TRV.
 
 The pyatmo ``AsyncAccount`` is the single source of truth: entities read
-straight from its ``Home``/``Room``/``Module`` objects. The coordinator only
-decides *when* to refresh it (polling now, webhook from step 1c).
+straight from its ``Home``/``Room``/``Module`` objects. Webhook events are
+merged into it as they arrive (phase 2); polling reconciles, at 300 s while
+the webhook is alive and 60 s when it has gone quiet.
 """
-# VERSION = "0.3.3"
+# VERSION = "0.4.0"
 
 from __future__ import annotations
 
 from collections import deque
 from collections.abc import Awaitable
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 from time import monotonic
 from typing import Any
@@ -22,6 +23,7 @@ from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 import pyatmo
 from pyatmo.enums import ScheduleType
 from pyatmo.exceptions import (
@@ -32,6 +34,7 @@ from pyatmo.exceptions import (
 )
 from pyatmo.home import Home
 from pyatmo.schedule import Schedule
+from pyatmo.webhook import RefreshScope, process_webhook
 
 from .api import NetatmoEnergyAuth
 from .const import (
@@ -42,6 +45,15 @@ from .const import (
     THROTTLED_INTERVAL,
     TOPOLOGY_INTERVAL,
     WEBHOOK_BUFFER_SIZE,
+    WEBHOOK_INTERVAL,
+    WEBHOOK_STALE_AFTER,
+)
+from .realtime import (
+    LIFECYCLE_PUSH_TYPES,
+    EventFilter,
+    ValvePosition,
+    normalize_payload,
+    valve_position,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -81,6 +93,9 @@ class WebhookState:
     last_event_at: datetime | None = None
     events_received: int = 0
     rejected_signatures: int = 0
+    events_applied: int = 0
+    events_ignored: int = 0
+    applied_by_type: dict[str, int] = field(default_factory=dict)
     recent: deque[dict[str, Any]] = field(
         default_factory=lambda: deque(maxlen=WEBHOOK_BUFFER_SIZE)
     )
@@ -89,6 +104,15 @@ class WebhookState:
     def active(self) -> bool:
         """Registered with Netatmo and not removed again."""
         return self.registered and not self.deleted_by_netatmo
+
+    @property
+    def fresh(self) -> bool:
+        """Active and an event arrived recently enough to trust it."""
+        return (
+            self.active
+            and self.last_event_at is not None
+            and dt_util.utcnow() - self.last_event_at < WEBHOOK_STALE_AFTER
+        )
 
 
 class NetatmoEnergyCoordinator(DataUpdateCoordinator[None]):
@@ -121,6 +145,9 @@ class NetatmoEnergyCoordinator(DataUpdateCoordinator[None]):
         self._topology_at: float | None = None
         self._confirm_unsub: CALLBACK_TYPE | None = None
         self._unreachable_logged: set[str] = set()
+        self._event_filter = EventFilter()
+        # module id -> last valve motor report (webhook only, not in /homestatus)
+        self.valve_positions: dict[str, ValvePosition] = {}
 
     @property
     def homes(self) -> list[Home]:
@@ -190,7 +217,44 @@ class NetatmoEnergyCoordinator(DataUpdateCoordinator[None]):
         except TimeoutError as err:
             raise UpdateFailed("Timeout talking to Netatmo") from err
         else:
-            self.update_interval = STATUS_INTERVAL
+            self.update_interval = self._poll_interval()
+
+    def _poll_interval(self) -> timedelta:
+        """Poll slowly while the webhook delivers, fast when it is quiet."""
+        return WEBHOOK_INTERVAL if self.webhook.fresh else STATUS_INTERVAL
+
+    async def async_apply_webhook(self, payload: dict[str, Any]) -> None:
+        """Merge one verified webhook payload into the model."""
+        if payload.get("push_type") in LIFECYCLE_PUSH_TYPES:
+            return
+        payload = normalize_payload(payload)
+        if not self._event_filter.accept(payload):
+            self.webhook.events_ignored += 1
+            self.async_signal_webhook()
+            return
+
+        if (report := valve_position(payload)) is not None:
+            module_id, position = report
+            self.valve_positions[module_id] = position
+
+        try:
+            result = await process_webhook(self.account, payload)
+        except Exception:
+            # A malformed payload must never break the integration; polling
+            # still reconciles.
+            _LOGGER.exception("Could not apply Netatmo webhook event")
+            return
+
+        self.webhook.events_applied += 1
+        key = result.event_type or str(payload.get("push_type"))
+        self.webhook.applied_by_type[key] = self.webhook.applied_by_type.get(key, 0) + 1
+        if RefreshScope.TOPOLOGY in result.refresh_scope:
+            self._topology_at = None
+        if result.refresh_scope:
+            self.async_schedule_confirm()
+        # The fresh webhook can slow polling down right away.
+        self.update_interval = self._poll_interval()
+        self.async_update_listeners()
 
     @callback
     def async_signal_webhook(self) -> None:

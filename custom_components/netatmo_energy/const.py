@@ -1,5 +1,5 @@
 """Constants for the NET-TRV integration."""
-# VERSION = "0.3.3"
+# VERSION = "0.4.0"
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from datetime import timedelta
 from typing import Final
 
 DOMAIN: Final = "netatmo_energy"
-VERSION: Final = "0.3.3"
+VERSION: Final = "0.4.0"
 MANUFACTURER: Final = "Netatmo"
 
 OAUTH2_AUTHORIZE: Final = "https://api.netatmo.com/oauth2/authorize"
@@ -25,6 +25,10 @@ VALVE_TYPES: Final = frozenset({"NRV"})
 # Polling. 1a has no webhook yet, so /homestatus runs at the "webhook dead"
 # cadence from the plan. Topology (/homesdata) changes rarely.
 STATUS_INTERVAL: Final = timedelta(seconds=60)
+# While the webhook delivers, polling only reconciles. Netatmo sends room
+# temperatures roughly every 6 min, so 15 min of silence means it is gone.
+WEBHOOK_INTERVAL: Final = timedelta(seconds=300)
+WEBHOOK_STALE_AFTER: Final = timedelta(minutes=15)
 THROTTLED_INTERVAL: Final = timedelta(seconds=300)
 TOPOLOGY_INTERVAL: Final = timedelta(hours=3)
 # Delay before re-reading state after a write, so Netatmo has applied it.

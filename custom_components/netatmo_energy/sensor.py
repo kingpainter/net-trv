@@ -1,5 +1,5 @@
 """Diagnostic sensors for NET-TRV valves (on room devices) and the relay."""
-# VERSION = "0.3.3"
+# VERSION = "0.4.0"
 
 from __future__ import annotations
 
@@ -117,6 +117,15 @@ VALVE_SENSORS: tuple[NetatmoModuleSensorDescription, ...] = (
     ),
 )
 
+# Raw motor position from motor_data_event (webhook only). The scale is not
+# documented by Netatmo; observed values ~1700-2300, lower = more open.
+VALVE_POSITION = SensorEntityDescription(
+    key="valve_position",
+    translation_key="valve_position",
+    state_class=SensorStateClass.MEASUREMENT,
+    entity_category=EntityCategory.DIAGNOSTIC,
+)
+
 RELAY_SENSORS: tuple[NetatmoModuleSensorDescription, ...] = (
     NetatmoModuleSensorDescription(
         key="wifi_strength",
@@ -153,6 +162,12 @@ async def async_setup_entry(
                 for valve in valves
                 for desc in VALVE_SENSORS
             )
+            entities.extend(
+                NetatmoValvePositionSensor(
+                    coordinator, room, valve, len(valves) > 1, VALVE_POSITION
+                )
+                for valve in valves
+            )
         if (relay := relay_of(home)) is not None:
             entities.extend(
                 NetatmoRelaySensor(coordinator, home, relay, desc)
@@ -178,6 +193,30 @@ class NetatmoValveSensor(NetatmoEnergyValveEntity, SensorEntity):
     @override
     def native_value(self) -> StateType:
         return self.entity_description.value_fn(self.valve)
+
+
+class NetatmoValvePositionSensor(NetatmoEnergyValveEntity, SensorEntity):
+    """Raw valve motor position, pushed by the webhook."""
+
+    @property
+    @override
+    def available(self) -> bool:
+        return self.coordinator_available
+
+    @property
+    @override
+    def native_value(self) -> int | None:
+        report = self.coordinator.valve_positions.get(self.valve.entity_id)
+        return report.position if report else None
+
+    @property
+    @override
+    def extra_state_attributes(self) -> dict[str, Any]:
+        report = self.coordinator.valve_positions.get(self.valve.entity_id)
+        return {
+            "motor_cmd": report.motor_cmd if report else None,
+            "netatmo_ts": report.ts if report else None,
+        }
 
 
 class NetatmoRelaySensor(NetatmoEnergyRelayEntity, SensorEntity):

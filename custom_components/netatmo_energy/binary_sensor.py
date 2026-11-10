@@ -1,5 +1,5 @@
 """Connectivity binary sensors for NET-TRV valves and the relay."""
-# VERSION = "0.3.3"
+# VERSION = "0.4.0"
 
 from __future__ import annotations
 
@@ -130,5 +130,7 @@ class NetatmoWebhookActive(NetatmoEnergyRelayEntity, BinarySensorEntity):
             if state.last_event_at
             else None,
             "rejected_signatures": state.rejected_signatures,
+            "events_applied": state.events_applied,
+            "events_ignored": state.events_ignored,
             "last_error": state.last_error,
         }

@@ -22,16 +22,16 @@ devices.
   so it does not share rate limits or the webhook with the core `netatmo`
   integration.
 
-## Features (0.3.3)
+## Features (0.4.0)
 
 | Feature | Status |
 | --- | --- |
 | OAuth2 config flow with reauth | ✅ |
 | Climate per room (auto / heat / off, presets) | ✅ |
-| Polling every 60 s with rate-limit backoff | ✅ |
+| Polling 60 s (300 s while the webhook delivers) with rate-limit backoff | ✅ |
 | Valve and relay diagnostics (battery, signal, firmware, connection) | ✅ |
 | Netatmo webhook: registered, signature-verified, events recorded | ✅ |
-| Real-time state from webhook events | Planned (phase 2) |
+| Real-time state from webhook events (temperature, demand, setpoint, home mode, valve position) | ✅ |
 | Schedule services and room history | Planned |
 
 ## Requirements
@@ -72,6 +72,7 @@ restart Home Assistant.
 | `sensor.<room>_radio_signal` | Valve radio signal to the relay, dBm. |
 | `sensor.<room>_firmware` | Valve firmware revision. |
 | `binary_sensor.<room>_connectivity` | Valve reachable by the relay. |
+| `sensor.<room>_valve_position` | Raw valve motor position from the webhook (lower = more open, observed ~1700–2300; scale undocumented). Attribute `motor_cmd`. |
 | `sensor.<relay>_wi_fi_signal` / `_firmware` | Relay Wi-Fi signal (dBm) and firmware. |
 | `sensor.<relay>_valves_online` | Reachable valves; attributes `total` and `offline`. |
 | `binary_sensor.<relay>_connectivity` | Relay reachable by Netatmo. |
