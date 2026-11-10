@@ -1,5 +1,5 @@
 """Config flow for NET-TRV (OAuth2 against the user's own Netatmo app)."""
-# VERSION = "0.3.1"
+# VERSION = "0.3.2"
 
 from __future__ import annotations
 
@@ -7,7 +7,11 @@ from collections.abc import Mapping
 import logging
 from typing import Any, override
 
-from homeassistant.config_entries import SOURCE_REAUTH, ConfigFlowResult
+from homeassistant.config_entries import (
+    SOURCE_REAUTH,
+    SOURCE_RECONFIGURE,
+    ConfigFlowResult,
+)
 from homeassistant.helpers import config_entry_oauth2_flow
 
 from .const import API_SCOPES, DOMAIN
@@ -50,11 +54,32 @@ class NetatmoEnergyFlowHandler(
             return self.async_show_form(step_id="reauth_confirm")
         return await self.async_step_user()
 
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Sign in to Netatmo again on demand.
+
+        Needed after changing the webhook URL on the Netatmo app: Netatmo
+        only binds an app-level webhook to a user at authorization time.
+        """
+        if user_input is None:
+            return self.async_show_form(step_id="reconfigure")
+        return await self.async_step_user()
+
     @override
     async def async_oauth_create_entry(self, data: dict[str, Any]) -> ConfigFlowResult:
-        """Create the entry, or update the token on reauth."""
+        """Create the entry, or update the token on reauth/reconfigure.
+
+        ``data_updates`` merges the new token into the entry, so the webhook
+        id and Nabu Casa cloudhook URL survive and the webhook URL stays the
+        same.
+        """
         if self.source == SOURCE_REAUTH:
             return self.async_update_reload_and_abort(
-                self._get_reauth_entry(), data=data
+                self._get_reauth_entry(), data_updates=data
+            )
+        if self.source == SOURCE_RECONFIGURE:
+            return self.async_update_reload_and_abort(
+                self._get_reconfigure_entry(), data_updates=data
             )
         return self.async_create_entry(title="NET-TRV", data=data)

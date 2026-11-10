@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.2] - 2026-11-10
+
+### Added
+- "Reconfigure" on the integration: sign in to Netatmo again without removing
+  NET-TRV. Needed after setting the webhook URL on the Netatmo app, because
+  Netatmo only links an app-level webhook to a user at sign-in.
+
+### Fixed
+- Reauth and reconfigure merge the new token into the entry instead of
+  replacing it, so the webhook id and Nabu Casa cloudhook URL are kept.
+
 ## [0.3.1] - 2026-11-09
 
 ### Changed

@@ -22,7 +22,7 @@ devices.
   so it does not share rate limits or the webhook with the core `netatmo`
   integration.
 
-## Features (0.3.1)
+## Features (0.3.2)
 
 | Feature | Status |
 | --- | --- |
@@ -90,8 +90,17 @@ restart Home Assistant.
 
 ## Webhook
 
-The integration registers a webhook with your Netatmo app once Home Assistant
-has started. It uses your Nabu Casa cloudhook when available, otherwise your
+Netatmo only delivers events to a webhook URL that is set on your Netatmo app
+when you sign in:
+
+1. Settings → Home Assistant Cloud → Webhooks: copy the NET-TRV URL (or use
+   `https://<your external URL>/api/webhook/<id>` without Nabu Casa).
+2. dev.netatmo.com → your app → paste it as *Webhook URL* and save.
+3. Settings → Devices & services → NET-TRV → ⋮ → **Reconfigure** and sign in
+   to Netatmo again.
+
+The integration also registers the webhook through the API once Home
+Assistant has started. It uses your Nabu Casa cloudhook when available, otherwise your
 external URL, which must be HTTPS on port 443. Netatmo allows one webhook per
 app, so use a dedicated Netatmo app for this integration.
 

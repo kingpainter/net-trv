@@ -1,5 +1,5 @@
 """Diagnostics for NET-TRV (Settings > Devices > Download diagnostics)."""
-# VERSION = "0.3.1"
+# VERSION = "0.3.2"
 
 from __future__ import annotations
 

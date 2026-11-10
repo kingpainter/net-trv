@@ -6,7 +6,7 @@ Step 1c only *receives and records* events: every payload is verified
 suspends slow endpoints for up to 10 min), and kept in a short ring buffer for
 diagnostics. Merging events into state comes in phase 2.
 """
-# VERSION = "0.3.1"
+# VERSION = "0.3.2"
 
 from __future__ import annotations
 

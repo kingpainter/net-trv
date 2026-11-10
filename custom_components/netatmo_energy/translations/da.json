@@ -7,6 +7,10 @@
       "reauth_confirm": {
         "title": "Godkend integrationen igen",
         "description": "NET-TRV skal have dig til at logge ind hos Netatmo igen."
+      },
+      "reconfigure": {
+        "title": "Log ind hos Netatmo igen",
+        "description": "Logger ind hos Netatmo igen uden at fjerne NET-TRV. Brug det, efter du har sat eller ændret webhook-URL'en på din Netatmo-app: Netatmo knytter kun webhooken til din konto, når du logger ind."
       }
     },
     "abort": {
@@ -21,7 +25,8 @@
       "oauth_timeout": "Timeout ved hentning af OAuth-token.",
       "oauth_unauthorized": "OAuth-godkendelsesfejl ved hentning af adgangstoken.",
       "user_rejected_authorize": "Kontotilknytning afvist.",
-      "reauth_successful": "Gengodkendelse lykkedes"
+      "reauth_successful": "Gengodkendelse lykkedes",
+      "reconfigure_successful": "Genkonfigurationen lykkedes"
     },
     "create_entry": {
       "default": "Godkendt"

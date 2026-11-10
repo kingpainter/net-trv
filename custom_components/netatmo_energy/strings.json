@@ -7,6 +7,10 @@
       "reauth_confirm": {
         "title": "Re-authenticate integration",
         "description": "NET-TRV needs you to sign in to Netatmo again."
+      },
+      "reconfigure": {
+        "title": "Sign in to Netatmo again",
+        "description": "Signs in to Netatmo again without removing NET-TRV. Use this after setting or changing the webhook URL on your Netatmo app: Netatmo only links the webhook to your account when you sign in."
       }
     },
     "abort": {
@@ -21,7 +25,8 @@
       "oauth_timeout": "Timeout resolving OAuth token.",
       "oauth_unauthorized": "OAuth authorization error while obtaining access token.",
       "user_rejected_authorize": "Account linking rejected.",
-      "reauth_successful": "Re-authentication was successful"
+      "reauth_successful": "Re-authentication was successful",
+      "reconfigure_successful": "Re-configuration was successful"
     },
     "create_entry": {
       "default": "Successfully authenticated"
