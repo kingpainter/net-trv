@@ -5,7 +5,7 @@ straight from its ``Home``/``Room``/``Module`` objects. Webhook events are
 merged into it as they arrive (phase 2); polling reconciles, at 300 s while
 the webhook is alive and 60 s when it has gone quiet.
 """
-# VERSION = "0.6.0"
+# VERSION = "0.7.0"
 
 from __future__ import annotations
 
@@ -37,6 +37,7 @@ from pyatmo.schedule import Schedule
 from pyatmo.webhook import RefreshScope, process_webhook
 
 if TYPE_CHECKING:
+    from .history import RoomHistoryImporter
     from .weather import PublicWeatherCoordinator
 
 from .api import NetatmoEnergyAuth
@@ -149,6 +150,8 @@ class NetatmoEnergyCoordinator(DataUpdateCoordinator[None]):
         self._topology_at: float | None = None
         # Public weather has its own coordinator (set in __init__.py).
         self.weather: PublicWeatherCoordinator | None = None
+        # Room history importer (set in __init__.py when the recorder runs).
+        self.history: RoomHistoryImporter | None = None
         self._confirm_unsub: CALLBACK_TYPE | None = None
         self._unreachable_logged: set[str] = set()
         self._event_filter = EventFilter()

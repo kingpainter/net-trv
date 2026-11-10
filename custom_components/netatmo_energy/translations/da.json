@@ -165,11 +165,12 @@
   "options": {
     "step": {
       "init": {
-        "title": "Offentligt vejr",
-        "description": "NET-TRV kan vise vejret fra offentlige Netatmo-stationer i nærheden. Værdien er medianen af alle stationer i cirklen, så én dårligt placeret station ikke trækker skævt. En større cirkel giver flere stationer, men mindre lokalt vejr.",
+        "title": "Indstillinger",
+        "description": "**Rumhistorik:** NET-TRV henter hver time rummenes temperatur og setpunkt fra Netatmo og gemmer dem i langtidsstatistikken (op til 30 dage bagud første gang), så graferne ikke har huller.\n\n**Offentligt vejr:** vejret fra offentlige Netatmo-stationer i nærheden. Værdien er medianen af alle stationer i cirklen, så én dårligt placeret station ikke trækker skævt.",
         "data": {
           "weather_enabled": "Vis offentligt vejr",
-          "weather_location": "Område"
+          "weather_location": "Område",
+          "history_enabled": "Importér rumhistorik"
         },
         "data_description": {
           "weather_location": "Stationer inden for cirklen bruges. 1 km er en god start i byen; brug mere på landet."

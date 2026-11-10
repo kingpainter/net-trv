@@ -1,5 +1,5 @@
 """Config flow for NET-TRV (OAuth2 against the user's own Netatmo app)."""
-# VERSION = "0.6.0"
+# VERSION = "0.7.0"
 
 from __future__ import annotations
 
@@ -21,6 +21,7 @@ import probatio as vol
 
 from .const import (
     API_SCOPES,
+    CONF_HISTORY_ENABLED,
     CONF_WEATHER_ENABLED,
     CONF_WEATHER_LOCATION,
     DEFAULT_WEATHER_RADIUS,
@@ -104,7 +105,7 @@ class NetatmoEnergyFlowHandler(
 
 
 class NetatmoEnergyOptionsFlow(OptionsFlowWithReload):
-    """Choose whether and where to read public weather stations."""
+    """Room history import and the public weather area."""
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -121,6 +122,10 @@ class NetatmoEnergyOptionsFlow(OptionsFlowWithReload):
         }
         schema = vol.Schema(
             {
+                vol.Required(
+                    CONF_HISTORY_ENABLED,
+                    default=options.get(CONF_HISTORY_ENABLED, True),
+                ): selector.BooleanSelector(),
                 vol.Required(
                     CONF_WEATHER_ENABLED,
                     default=options.get(CONF_WEATHER_ENABLED, True),

@@ -22,7 +22,7 @@ devices.
   so it does not share rate limits or the webhook with the core `netatmo`
   integration.
 
-## Features (0.6.0)
+## Features (0.7.0)
 
 | Feature | Status |
 | --- | --- |
@@ -34,7 +34,7 @@ devices.
 | Real-time state from webhook events (temperature, demand, setpoint, home mode, valve position) | ✅ |
 | Public weather from nearby Netatmo stations (median of the area) | ✅ |
 | Heating schedule select and the core netatmo heating actions (with end time) | ✅ |
-| Room history (`getroommeasure`) | Planned (0.7.0) |
+| Room history (`getroommeasure`) imported as long-term statistics | ✅ |
 | Schedule editing, away / frost guard temperatures | Planned (0.8.0) |
 
 ## Requirements
@@ -96,6 +96,19 @@ restart Home Assistant.
 The first five target NET-TRV climate entities and match the core `netatmo`
 actions of the same name, so automations can be moved by changing the domain.
 Times without a time zone are Home Assistant local time.
+
+### Room history
+
+Every hour NET-TRV reads each room's hourly temperature (mean, min, max) and
+setpoint from Netatmo and adds them to Home Assistant's long-term statistics
+as `netatmo_energy:<room_id>_temperature` and `netatmo_energy:<room_id>_setpoint`.
+The first run imports the last 30 days, so graphs start with history from
+before NET-TRV and have no gaps when Home Assistant was down. Use them in a
+**Statistics graph** card. One call per room per hour; it needs the recorder
+and can be switched off under **Configure**.
+
+Netatmo's API has no heating time per room; `getroommeasure` only offers
+temperature, setpoint and daily min/max.
 
 ### Public weather
 

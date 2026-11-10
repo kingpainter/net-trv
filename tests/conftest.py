@@ -78,6 +78,16 @@ def config_entry() -> MockConfigEntry:
     )
 
 
+def room_measure(params: dict[str, Any]) -> dict[str, Any]:
+    """Hourly history like Netatmo: ts centred in the hour, optimize=false."""
+    begin, end = int(params["date_begin"]), int(params["date_end"])
+    body = {
+        str(start + 1800): [20.0, 19.5, 20.5, 21]
+        for start in range(begin // 3600 * 3600, end, 3600)
+    }
+    return {"status": "ok", "body": body}
+
+
 @pytest.fixture
 def mock_api() -> Generator[AsyncMock]:
     """Answer Netatmo API calls from the fixtures, no network."""
@@ -89,6 +99,8 @@ def mock_api() -> Generator[AsyncMock]:
             body = load_fixture("homestatus.json")
         elif url.endswith("api/getpublicdata"):
             body = load_fixture("publicdata.json")
+        elif url.endswith("api/getroommeasure"):
+            body = room_measure(params or {})
         else:
             body = {"status": "ok", "time_server": 1762700000}
         resp = MagicMock()

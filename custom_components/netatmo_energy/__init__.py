@@ -1,5 +1,5 @@
 """The NET-TRV integration: Netatmo relay (NAPlug) and valves (NRV)."""
-# VERSION = "0.6.0"
+# VERSION = "0.7.0"
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from homeassistant.helpers.start import async_at_started
 from homeassistant.helpers.typing import ConfigType
 
 from .api import NetatmoEnergyAuth
-from .const import DOMAIN
+from .const import CONF_HISTORY_ENABLED, DOMAIN
 from .coordinator import NetatmoEnergyConfigEntry, NetatmoEnergyCoordinator
 from .entity import (
     relay_device_info,
@@ -85,9 +85,20 @@ async def async_setup_entry(
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     _remove_stale_devices(hass, entry, coordinator)
 
+    # Room history needs the recorder; it is optional and runs in the
+    # background, so it never delays setup.
+    if "recorder" in hass.config.components and entry.options.get(
+        CONF_HISTORY_ENABLED, True
+    ):
+        from .history import RoomHistoryImporter  # noqa: PLC0415
+
+        coordinator.history = RoomHistoryImporter(hass, entry)
+
     # Register the webhook once HA has started, so Nabu Casa is connected.
     async def _start_webhook(hass: HomeAssistant) -> None:
         await async_setup_webhook(hass, entry)
+        if coordinator.history is not None:
+            coordinator.history.async_start()
 
     entry.async_on_unload(async_at_started(hass, _start_webhook))
     return True

@@ -1,5 +1,5 @@
 """Diagnostics for NET-TRV (Settings > Devices > Download diagnostics)."""
-# VERSION = "0.6.0"
+# VERSION = "0.7.0"
 
 from __future__ import annotations
 
@@ -79,6 +79,7 @@ async def async_get_config_entry_diagnostics(
         "api_calls_last_hour": coordinator.auth.calls_last_hour,
         "homes": homes,
         "public_weather": _weather(coordinator),
+        "room_history": _history(coordinator),
         "webhook": {
             "registered": state.registered,
             "our_url_ends_with": _tail(entry.data.get(CONF_CLOUDHOOK_URL)),
@@ -124,4 +125,16 @@ def _weather(coordinator: NetatmoEnergyCoordinator) -> dict[str, Any] | None:
         "stations": None if data is None else data.stations,
         "values": None if data is None else data.values,
         "counts": None if data is None else data.counts,
+    }
+
+
+def _history(coordinator: NetatmoEnergyCoordinator) -> dict[str, Any] | None:
+    """State of the hourly room history import."""
+    history = coordinator.history
+    if history is None:
+        return None
+    return {
+        "last_run": history.last_run.isoformat() if history.last_run else None,
+        "imported_hours": history.imported_hours,
+        "last_error": history.last_error,
     }

@@ -1,5 +1,5 @@
 """Constants for the NET-TRV integration."""
-# VERSION = "0.6.0"
+# VERSION = "0.7.0"
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from datetime import timedelta
 from typing import Final
 
 DOMAIN: Final = "netatmo_energy"
-VERSION: Final = "0.6.0"
+VERSION: Final = "0.7.0"
 MANUFACTURER: Final = "Netatmo"
 
 OAUTH2_AUTHORIZE: Final = "https://api.netatmo.com/oauth2/authorize"
@@ -45,6 +45,9 @@ WEATHER_INTERVAL: Final = timedelta(minutes=10)
 CONF_WEATHER_ENABLED: Final = "weather_enabled"
 CONF_WEATHER_LOCATION: Final = "weather_location"
 DEFAULT_WEATHER_RADIUS: Final = 1000.0
+
+# Room history (/getroommeasure) imported as long-term statistics.
+CONF_HISTORY_ENABLED: Final = "history_enabled"
 
 # Netatmo per-user limits (dev.netatmo.com/guideline): 50 per 10 s, 500 per hour.
 RATE_LIMIT_PER_HOUR: Final = 500

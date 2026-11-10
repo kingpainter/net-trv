@@ -165,11 +165,12 @@
   "options": {
     "step": {
       "init": {
-        "title": "Public weather",
-        "description": "NET-TRV can show weather from public Netatmo stations near you. The value shown is the median of all stations inside the circle, so one badly placed station does not skew it. A larger circle gives more stations but less local weather.",
+        "title": "Options",
+        "description": "**Room history:** every hour NET-TRV reads each room's temperature and setpoint from Netatmo into long-term statistics (up to 30 days back the first time), so graphs have no gaps.\n\n**Public weather:** weather from public Netatmo stations near you. The value is the median of all stations inside the circle, so one badly placed station does not skew it.",
         "data": {
           "weather_enabled": "Show public weather",
-          "weather_location": "Area"
+          "weather_location": "Area",
+          "history_enabled": "Import room history"
         },
         "data_description": {
           "weather_location": "Stations inside this circle are used. 1 km is a good start in a city; use more in the countryside."

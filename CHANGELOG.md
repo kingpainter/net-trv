@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.7.0] - 2026-11-10
+
+### Added
+- Room history from `/getroommeasure` imported hourly as external long-term
+  statistics: temperature (mean/min/max) and setpoint per room. The first run
+  backfills 30 days; later runs only ask for new hours.
+- Option to switch the history import off; diagnostics show its state.
+
 ## [0.6.0] - 2026-11-10
 
 ### Added
