@@ -22,7 +22,7 @@ devices.
   so it does not share rate limits or the webhook with the core `netatmo`
   integration.
 
-## Features (0.3.2)
+## Features (0.3.3)
 
 | Feature | Status |
 | --- | --- |

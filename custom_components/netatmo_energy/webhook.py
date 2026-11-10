@@ -6,7 +6,7 @@ Step 1c only *receives and records* events: every payload is verified
 suspends slow endpoints for up to 10 min), and kept in a short ring buffer for
 diagnostics. Merging events into state comes in phase 2.
 """
-# VERSION = "0.3.2"
+# VERSION = "0.3.3"
 
 from __future__ import annotations
 
@@ -98,7 +98,10 @@ async def async_setup_webhook(
     async def _handle(
         hass: HomeAssistant, webhook_id: str, request: web.Request
     ) -> web.Response:
-        body = await request.read()
+        # Nabu Casa cloudhooks arrive as a MockRequest, which has no read();
+        # request.content.read() returns the raw bytes for both kinds, and the
+        # HMAC must be computed over the raw bytes.
+        body = await request.content.read()
         if not secret or not verify_signature(
             body, secret, request.headers.get(SIGNATURE_HEADER)
         ):

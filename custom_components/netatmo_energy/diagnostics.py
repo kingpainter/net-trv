@@ -1,5 +1,5 @@
 """Diagnostics for NET-TRV (Settings > Devices > Download diagnostics)."""
-# VERSION = "0.3.2"
+# VERSION = "0.3.3"
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from typing import Any
 from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.const import CONF_WEBHOOK_ID
 from homeassistant.core import HomeAssistant
+from pyatmo.const import WEBHOOK_ENDPOINT
 
 from .const import CONF_CLOUDHOOK_URL
 from .coordinator import NetatmoEnergyConfigEntry
@@ -24,6 +25,27 @@ TO_REDACT = {
     "home_name",
     "coordinates",
 }
+
+
+def _tail(url: Any) -> Any:
+    """Show only the end of a webhook URL: enough to compare, not to reuse."""
+    return f"...{url[-8:]}" if isinstance(url, str) and len(url) > 8 else url
+
+
+async def _registered_webhooks(entry: NetatmoEnergyConfigEntry) -> Any:
+    """Ask Netatmo which webhooks it has for this app and user."""
+    try:
+        resp = await entry.runtime_data.auth.async_get_api_request(
+            endpoint=WEBHOOK_ENDPOINT
+        )
+        data = await resp.json()
+    except Exception as err:
+        return {"error": f"{type(err).__name__}: {err}"}
+    if isinstance(data, dict):
+        for item in data.get("body", data.get("webhooks", [])) or []:
+            if isinstance(item, dict) and "url" in item:
+                item["url"] = _tail(item["url"])
+    return data
 
 
 async def async_get_config_entry_diagnostics(
@@ -58,6 +80,8 @@ async def async_get_config_entry_diagnostics(
         "homes": homes,
         "webhook": {
             "registered": state.registered,
+            "our_url_ends_with": _tail(entry.data.get(CONF_CLOUDHOOK_URL)),
+            "netatmo_webhooks": await _registered_webhooks(entry),
             "deleted_by_netatmo": state.deleted_by_netatmo,
             "last_error": state.last_error,
             "events_received": state.events_received,

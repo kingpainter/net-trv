@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.3] - 2026-11-10
+
+### Fixed
+- Webhook calls via Nabu Casa were dropped: cloudhook requests arrive as a
+  `MockRequest` without `read()`, so the handler raised before verifying or
+  recording anything, and Home Assistant answered 200. The raw body is now read
+  with `request.content.read()`, which works for both request types.
+
+### Added
+- Diagnostics show Netatmo's own list of registered webhooks
+  (`GET /webhooks/v1`) and the last 8 characters of our webhook URL.
+- Regression test that sends through a cloud `MockRequest`.
+
 ## [0.3.2] - 2026-11-10
 
 ### Added

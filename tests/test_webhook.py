@@ -6,10 +6,12 @@ import hashlib
 import hmac
 import json
 from typing import Any
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
+from homeassistant.components import webhook
 from homeassistant.const import CONF_WEBHOOK_ID, STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
+from homeassistant.util.aiohttp import MockRequest
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -146,3 +148,49 @@ async def test_deletion_and_activation_events(
     await _post(client, webhook_id, {"push_type": "webhook_activation"}, sig="")
     await hass.async_block_till_done()
     assert hass.states.get(WEBHOOK_SENSOR).state == STATE_ON
+
+
+@pytest.mark.parametrize("signed", [True, False])
+async def test_cloudhook_mock_request(
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+    mock_api: AsyncMock,
+    signed: bool,
+) -> None:
+    """Nabu Casa delivers a MockRequest (no read()); it must be handled too."""
+    webhook_id = await _setup(hass, config_entry)
+    body = json.dumps({"push_type": "device_event"}).encode()
+    headers = {"Content-Type": "application/json"}
+    if signed:
+        headers["X-Netatmo-secret"] = _sign(body)
+    request = MockRequest(
+        content=body, mock_source="cloud", method="POST", headers=headers
+    )
+
+    response = await webhook.async_handle_webhook(hass, webhook_id, request)
+    await hass.async_block_till_done()
+
+    state = hass.states.get(WEBHOOK_SENSOR)
+    if signed:
+        assert response.status == 200
+        assert state.attributes["events_received"] == 1
+    else:
+        assert response.status == 401
+        assert state.attributes["rejected_signatures"] == 1
+
+
+async def test_diagnostics_lists_netatmo_webhooks(
+    hass: HomeAssistant, config_entry: MockConfigEntry, mock_api: AsyncMock
+) -> None:
+    await _setup(hass, config_entry)
+    get = AsyncMock()
+    get.return_value.json = AsyncMock(
+        return_value={"body": [{"url": "https://hooks.example/abcdefghijkl"}]}
+    )
+    with patch(
+        "custom_components.netatmo_energy.api.NetatmoEnergyAuth.async_get_request",
+        get,
+    ):
+        diag = await async_get_config_entry_diagnostics(hass, config_entry)
+
+    assert diag["webhook"]["netatmo_webhooks"] == {"body": [{"url": "...efghijkl"}]}
