@@ -1,0 +1,71 @@
+name: Bug report
+description: Something in NET-TRV does not work as expected.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. **Never paste your client id, client secret, tokens or webhook URL.**
+        Attach the diagnostics file instead; it redacts them.
+  - type: input
+    id: version
+    attributes:
+      label: NET-TRV version
+      placeholder: "0.9.2"
+    validations:
+      required: true
+  - type: input
+    id: ha_version
+    attributes:
+      label: Home Assistant version
+      placeholder: "2026.11.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Setup / sign-in
+        - Climate (rooms)
+        - Sensors / diagnostics
+        - Webhook / real-time updates
+        - Schedules
+        - Actions
+        - Room history
+        - Public weather
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Settings → System → Logs, search for `net_trv`. Enable debug logging for `custom_components.net_trv` and `pyatmo` if possible.
+      render: text
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Settings → Devices & services → NET-TRV → ⋮ → Download diagnostics. Drag the file here.
+  - type: textarea
+    id: setup
+    attributes:
+      label: Your setup
+      description: Number of relays and valves, heating type (boiler / district heating), Nabu Casa or own HTTPS URL.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I removed client id, client secret, tokens and webhook URLs from everything I pasted.
+          required: true
+        - label: I searched existing issues.
+          required: true

@@ -216,6 +216,13 @@ logger:
 - The integration requires the same `pyatmo` version as Home Assistant's core
   `netatmo` integration while both are installed.
 
+## Contributing
+
+Bug reports, ideas and pull requests are welcome. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for setup, checks and rules,
+[SECURITY.md](SECURITY.md) for reporting security problems and
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md).

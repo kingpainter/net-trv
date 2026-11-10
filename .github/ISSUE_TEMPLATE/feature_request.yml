@@ -1,0 +1,36 @@
+name: Feature request
+description: Suggest something NET-TRV should do.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does it solve?
+      description: Describe the situation, not only the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should NET-TRV do? Entities, actions, options?
+    validations:
+      required: true
+  - type: input
+    id: endpoint
+    attributes:
+      label: Netatmo API endpoint or webhook event (if known)
+      placeholder: "e.g. getroommeasure, synchomeschedule, motor_data_event"
+  - type: textarea
+    id: core
+    attributes:
+      label: Does the core netatmo integration do this today?
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: It is about the Netatmo relay (NAPlug) or radiator valves (NRV).
+          required: true
+        - label: I searched existing issues.
+          required: true
