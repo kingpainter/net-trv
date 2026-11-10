@@ -6,7 +6,7 @@ would erase zones or the timetable. Every edit therefore starts from a fresh
 fields. pyatmo's ``Home.async_sync_schedule`` is not used: it always sends
 ``name="Default"`` and would rename the schedule.
 """
-# VERSION = "0.9.0"
+# VERSION = "0.9.1"
 
 from __future__ import annotations
 

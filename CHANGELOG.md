@@ -4,6 +4,20 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.9.1] - 2026-11-10
+
+### Added
+- System health: Netatmo reachability, API calls last hour, webhook state,
+  last event, poll interval, valves online, room history and weather status.
+
+### Fixed
+- hassfest: requirement is now `pyatmo>=9.9.0` (minimum version) because
+  Home Assistant itself ships pyatmo; tests still pin 9.9.0.
+
+### Changed
+- Repository renamed to `kingpainter/net-trv`; manifest and README links
+  updated. Valve position range in README corrected to ~1470–2450.
+
 ## [0.9.0] - 2026-11-10
 
 ### Changed (breaking)

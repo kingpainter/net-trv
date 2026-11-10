@@ -1,11 +1,11 @@
 # NET-TRV
 
-[![Release](https://img.shields.io/github/v/release/kingpainter/netatmo-energy?include_prereleases&sort=semver)](https://github.com/kingpainter/netatmo-energy/releases)
+[![Release](https://img.shields.io/github/v/release/kingpainter/net-trv?include_prereleases&sort=semver)](https://github.com/kingpainter/net-trv/releases)
 [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.10%2B-18BCF2?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/)
 [![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Validate](https://github.com/kingpainter/netatmo-energy/actions/workflows/validate.yml/badge.svg)](https://github.com/kingpainter/netatmo-energy/actions/workflows/validate.yml)
-[![Lint and tests](https://github.com/kingpainter/netatmo-energy/actions/workflows/tests.yml/badge.svg)](https://github.com/kingpainter/netatmo-energy/actions/workflows/tests.yml)
+[![Validate](https://github.com/kingpainter/net-trv/actions/workflows/validate.yml/badge.svg)](https://github.com/kingpainter/net-trv/actions/workflows/validate.yml)
+[![Lint and tests](https://github.com/kingpainter/net-trv/actions/workflows/tests.yml/badge.svg)](https://github.com/kingpainter/net-trv/actions/workflows/tests.yml)
 [![Quality scale](https://img.shields.io/badge/quality%20scale-silver%20(target)-C0C0C0)](quality_scale.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -33,7 +33,7 @@ real-time updates through Netatmo's webhook.
   so it does not share rate limits or the webhook with the core `netatmo`
   integration. Typical use: about 15 API calls per hour of the 500 allowed.
 
-## Features (0.9.0)
+## Features (0.9.1)
 
 | Feature | Status |
 | --- | --- |
@@ -46,6 +46,7 @@ real-time updates through Netatmo's webhook.
 | Room history (`getroommeasure`) imported as long-term statistics | ✅ |
 | Public weather from nearby Netatmo stations (median of the area) | ✅ |
 | Diagnostics with the last 50 raw webhook events (personal data redacted) | ✅ |
+| System health: Netatmo reachability, API calls, webhook, valves online | ✅ |
 
 ## Requirements
 
@@ -61,7 +62,7 @@ real-time updates through Netatmo's webhook.
 ### HACS
 
 1. HACS → Integrations → ⋮ → Custom repositories → add
-   `https://github.com/kingpainter/netatmo-energy` as *Integration*.
+   `https://github.com/kingpainter/net-trv` as *Integration*.
 2. Install **NET-TRV** and restart Home Assistant.
 
 ### Manual
@@ -97,7 +98,7 @@ Settings → Devices & services → NET-TRV → **Configure**:
 | `sensor.<room>_battery` / `_battery_state` | Valve battery (% is approximate, derived from Netatmo's state). |
 | `sensor.<room>_radio_signal` | Valve radio signal to the relay, dBm. |
 | `sensor.<room>_firmware` | Valve firmware revision. |
-| `sensor.<room>_valve_position` | Raw valve motor position from the webhook (lower = more open, observed ~1700–2450; scale undocumented). Attribute `motor_cmd`. |
+| `sensor.<room>_valve_position` | Raw valve motor position from the webhook (lower = more open, observed ~1470–2450; scale undocumented). Attribute `motor_cmd`. |
 | `binary_sensor.<room>_connectivity` | Valve reachable by the relay. |
 | `select.<relay>_heating_schedule` | Active Netatmo heating schedule (e.g. Sommer / Vinter); selecting one switches the whole home. |
 | `number.<relay>_away_temperature` / `_frost_guard_temperature` | Away and frost guard temperatures of the active schedule. |
@@ -189,6 +190,8 @@ Imported room history stays in long-term statistics until you delete it under
 Developer tools → Statistics.
 
 ## Troubleshooting
+
+Settings → System → Repairs → ⋮ → **System information** → NET-TRV shows whether Netatmo is reachable, API calls in the last hour, webhook state and valves online.
 
 Download diagnostics from the integration page: it shows the webhook state,
 API calls in the last hour, room history and weather status, and the last 50

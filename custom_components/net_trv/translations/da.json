@@ -317,5 +317,17 @@
         "boost": "Boost"
       }
     }
+  },
+  "system_health": {
+    "info": {
+      "can_reach_server": "Kan nå Netatmo-serveren",
+      "api_calls_last_hour": "API-kald seneste time",
+      "webhook": "Webhook",
+      "last_webhook_event": "Seneste webhook-hændelse",
+      "poll_interval": "Pollinginterval",
+      "valves_online": "Ventiler online",
+      "room_history": "Rumhistorik",
+      "public_weather": "Offentligt vejr"
+    }
   }
 }
