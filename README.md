@@ -22,7 +22,7 @@ devices.
   so it does not share rate limits or the webhook with the core `netatmo`
   integration.
 
-## Features (0.5.0)
+## Features (0.6.0)
 
 | Feature | Status |
 | --- | --- |
@@ -33,7 +33,9 @@ devices.
 | Netatmo webhook: registered, signature-verified, events recorded | ✅ |
 | Real-time state from webhook events (temperature, demand, setpoint, home mode, valve position) | ✅ |
 | Public weather from nearby Netatmo stations (median of the area) | ✅ |
-| Schedule services and room history | Planned |
+| Heating schedule select and the core netatmo heating actions (with end time) | ✅ |
+| Room history (`getroommeasure`) | Planned (0.7.0) |
+| Schedule editing, away / frost guard temperatures | Planned (0.8.0) |
 
 ## Requirements
 
@@ -77,7 +79,23 @@ restart Home Assistant.
 | `sensor.<relay>_wi_fi_signal` / `_firmware` | Relay Wi-Fi signal (dBm) and firmware. |
 | `sensor.<relay>_valves_online` | Reachable valves; attributes `total` and `offline`. |
 | `binary_sensor.<relay>_connectivity` | Relay reachable by Netatmo. |
+| `select.<relay>_heating_schedule` | Active Netatmo heating schedule (e.g. Sommer / Vinter); selecting one switches the whole home. |
 | `binary_sensor.<relay>_webhook` | Webhook registered with Netatmo; attributes `events_received`, `last_event`, `rejected_signatures`, `last_error`. |
+
+### Actions
+
+| Action | What it does |
+| --- | --- |
+| `netatmo_energy.set_schedule` | Switch the home to a heating schedule by name. |
+| `netatmo_energy.set_preset_mode_with_end_datetime` | Away / frost guard (whole home) or boost (room) until a time. |
+| `netatmo_energy.set_temperature_with_end_datetime` | Manual setpoint until a time. |
+| `netatmo_energy.set_temperature_with_time_period` | Manual setpoint for a duration. |
+| `netatmo_energy.clear_temperature_setting` | Room back to the schedule. |
+| `netatmo_energy.register_webhook` / `unregister_webhook` | Start or stop Netatmo's real-time events. |
+
+The first five target NET-TRV climate entities and match the core `netatmo`
+actions of the same name, so automations can be moved by changing the domain.
+Times without a time zone are Home Assistant local time.
 
 ### Public weather
 

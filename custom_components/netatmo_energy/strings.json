@@ -126,6 +126,11 @@
       "webhook": {
         "name": "Webhook"
       }
+    },
+    "select": {
+      "schedule": {
+        "name": "Heating schedule"
+      }
     }
   },
   "exceptions": {
@@ -143,6 +148,18 @@
     },
     "public_weather_failed": {
       "message": "Could not read public weather from Netatmo: {error}"
+    },
+    "unknown_schedule": {
+      "message": "No heating schedule called \"{schedule}\" in Netatmo."
+    },
+    "end_in_past": {
+      "message": "The end time {end} is in the past."
+    },
+    "not_loaded": {
+      "message": "NET-TRV is not loaded."
+    },
+    "webhook_failed": {
+      "message": "Webhook action failed: {error}"
     }
   },
   "options": {
@@ -163,6 +180,81 @@
   "device": {
     "public_weather": {
       "name": "Public weather"
+    }
+  },
+  "services": {
+    "set_schedule": {
+      "name": "Set heating schedule",
+      "description": "Switches the home to another Netatmo heating schedule. Applies to every room.",
+      "fields": {
+        "schedule_name": {
+          "name": "Schedule",
+          "description": "Name of the schedule as shown in the Netatmo app."
+        }
+      }
+    },
+    "set_preset_mode_with_end_datetime": {
+      "name": "Set preset until",
+      "description": "Away or frost guard for the whole home, or boost for this room, until the given time.",
+      "fields": {
+        "preset_mode": {
+          "name": "Preset",
+          "description": "Away and frost guard apply to the whole home."
+        },
+        "end_datetime": {
+          "name": "Until",
+          "description": "When Netatmo returns to the schedule."
+        }
+      }
+    },
+    "set_temperature_with_end_datetime": {
+      "name": "Set temperature until",
+      "description": "Manual setpoint for the room until the given time.",
+      "fields": {
+        "target_temperature": {
+          "name": "Temperature",
+          "description": "Setpoint, 7–30 °C."
+        },
+        "end_datetime": {
+          "name": "Until",
+          "description": "When the room returns to the schedule."
+        }
+      }
+    },
+    "set_temperature_with_time_period": {
+      "name": "Set temperature for a while",
+      "description": "Manual setpoint for the room for the given duration.",
+      "fields": {
+        "target_temperature": {
+          "name": "Temperature",
+          "description": "Setpoint, 7–30 °C."
+        },
+        "time_period": {
+          "name": "Duration",
+          "description": "How long the setpoint lasts."
+        }
+      }
+    },
+    "clear_temperature_setting": {
+      "name": "Clear temperature setting",
+      "description": "Drops the manual setpoint; the room follows the schedule again."
+    },
+    "register_webhook": {
+      "name": "Register webhook",
+      "description": "Asks Netatmo to send real-time events to NET-TRV again."
+    },
+    "unregister_webhook": {
+      "name": "Unregister webhook",
+      "description": "Asks Netatmo to stop sending events. NET-TRV falls back to polling every 60 s."
+    }
+  },
+  "selector": {
+    "timed_preset": {
+      "options": {
+        "away": "Away",
+        "frost_guard": "Frost guard",
+        "boost": "Boost"
+      }
     }
   }
 }

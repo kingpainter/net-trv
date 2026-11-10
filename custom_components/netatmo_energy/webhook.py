@@ -6,7 +6,7 @@ Every payload is verified
 suspends slow endpoints for up to 10 min), and kept in a short ring buffer for
 diagnostics, then merged into the model by the coordinator (phase 2).
 """
-# VERSION = "0.5.0"
+# VERSION = "0.6.0"
 
 from __future__ import annotations
 
@@ -148,28 +148,54 @@ async def async_setup_webhook(
     )
     entry.async_on_unload(lambda: webhook.async_unregister(hass, webhook_id))
 
-    if secret is None:
+    await async_register_with_netatmo(hass, entry)
+
+
+async def async_register_with_netatmo(
+    hass: HomeAssistant, entry: NetatmoEnergyConfigEntry
+) -> bool:
+    """Tell Netatmo our URL (also the ``register_webhook`` action)."""
+    coordinator = entry.runtime_data
+    state = coordinator.webhook
+    webhook_id = await async_ensure_webhook_id(hass, entry)
+    if getattr(coordinator.oauth_implementation, "client_secret", None) is None:
         state.last_error = "client secret unavailable; webhook not registered"
         _LOGGER.warning("NET-TRV: %s", state.last_error)
         coordinator.async_signal_webhook()
-        return
+        return False
 
     url = await _async_webhook_url(hass, entry, webhook_id)
     if url is None:
         state.last_error = "no public HTTPS URL (Nabu Casa or external URL needed)"
         _LOGGER.warning("NET-TRV webhook not registered: %s", state.last_error)
         coordinator.async_signal_webhook()
-        return
+        return False
 
     try:
         await coordinator.auth.async_addwebhook(url)
     except (ApiError, TimeoutError) as err:
         state.last_error = f"registration failed: {err}"
         _LOGGER.warning("NET-TRV webhook %s", state.last_error)
-    else:
-        state.registered = True
-        state.last_error = None
-        _LOGGER.info("NET-TRV webhook registered")
+        coordinator.async_signal_webhook()
+        return False
+    state.registered = True
+    state.deleted_by_netatmo = False
+    state.last_error = None
+    _LOGGER.info("NET-TRV webhook registered")
+    coordinator.async_signal_webhook()
+    return True
+
+
+async def async_unregister_with_netatmo(entry: NetatmoEnergyConfigEntry) -> None:
+    """Ask Netatmo to stop sending events (``unregister_webhook`` action).
+
+    The local handler stays, so a later ``register_webhook`` works without a
+    reload. Polling falls back to 60 s once events stop.
+    """
+    coordinator = entry.runtime_data
+    await coordinator.auth.async_dropwebhook()
+    coordinator.webhook.registered = False
+    coordinator.webhook.last_error = "unregistered by user"
     coordinator.async_signal_webhook()
 
 

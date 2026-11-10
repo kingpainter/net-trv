@@ -5,13 +5,13 @@ Device tree in Home Assistant:
     Relay (NAPlug, hub; area = the Netatmo room it sits in)
     └── Room (one per Netatmo room WITH a valve; holds the climate entity and,
         from step 1b, the diagnostics of the valve(s) in that room)
-    Public weather (service device, nearby stations; 0.5.0)
+    Public weather (service device, nearby stations; 0.6.0)
 
 Valves are not separate devices: with one valve per room the room *is* the
 valve for the user, and separate devices would leave rooms or valves without
 entities.
 """
-# VERSION = "0.5.0"
+# VERSION = "0.6.0"
 
 from __future__ import annotations
 

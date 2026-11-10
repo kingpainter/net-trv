@@ -96,6 +96,38 @@
                 "m_offset": 0
               }
             ]
+          },
+          {
+            "id": "sched2",
+            "name": "Vinter",
+            "type": "therm",
+            "selected": false,
+            "default": false,
+            "away_temp": 12,
+            "hg_temp": 7,
+            "zones": [
+              {
+                "id": 0,
+                "type": 0,
+                "name": "Comfort",
+                "rooms": [
+                  {
+                    "id": "1001",
+                    "therm_setpoint_temperature": 21
+                  },
+                  {
+                    "id": "1002",
+                    "therm_setpoint_temperature": 22
+                  }
+                ]
+              }
+            ],
+            "timetable": [
+              {
+                "zone_id": 0,
+                "m_offset": 0
+              }
+            ]
           }
         ]
       }

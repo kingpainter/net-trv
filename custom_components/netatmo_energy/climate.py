@@ -1,10 +1,10 @@
 """Climate entities for NET-TRV: one per Netatmo room."""
-# VERSION = "0.5.0"
+# VERSION = "0.6.0"
 
 from __future__ import annotations
 
 from collections.abc import Awaitable
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any, override
 
 from homeassistant.components.climate import ClimateEntity
@@ -17,6 +17,7 @@ from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.util import dt as dt_util
 from pyatmo.exceptions import ApiError
 from pyatmo.room import Room
 
@@ -40,6 +41,7 @@ from .const import (
 )
 from .coordinator import NetatmoEnergyConfigEntry, NetatmoEnergyCoordinator
 from .entity import NetatmoEnergyRoomEntity, valves_in
+from .select import async_switch_schedule
 
 PARALLEL_UPDATES = 1
 
@@ -259,6 +261,60 @@ class NetatmoEnergyClimate(NetatmoEnergyRoomEntity, ClimateEntity):
         """Turn off = manual at the minimum setpoint."""
         await self.async_set_hvac_mode(HVACMode.OFF)
 
+    # --- Actions (services.py) ------------------------------------------------
+
+    async def async_service_set_schedule(self, schedule_name: str) -> None:
+        """Switch the home's heating schedule (affects every room)."""
+        await async_switch_schedule(self.room.home, schedule_name)
+        self.coordinator.async_update_listeners()
+        self.coordinator.async_schedule_confirm()
+
+    async def async_service_set_preset_with_end(
+        self, preset_mode: str, end_datetime: datetime
+    ) -> None:
+        """Away / frost guard for the home, or boost for the room, until a time."""
+        end = _end_timestamp(end_datetime)
+        if preset_mode == PRESET_BOOST:
+            await self._async_write(
+                self.room.async_therm_set(NA_MODE_MAX, end_time=end),
+                NA_MODE_MAX,
+                None,
+                end,
+            )
+            return
+        mode = NA_MODE_AWAY if preset_mode == PRESET_AWAY else NA_MODE_FROSTGUARD
+        home = self.room.home
+        await self._async_call(home.async_set_thermmode(mode, end_time=end))
+        home.therm_mode = mode
+        self.coordinator.async_update_listeners()
+        self.coordinator.async_schedule_confirm()
+
+    async def async_service_set_temperature_with_end(
+        self, target_temperature: float, end_datetime: datetime
+    ) -> None:
+        """Manual setpoint until a given time."""
+        end = _end_timestamp(end_datetime)
+        await self._async_write(
+            self.room.async_therm_set(NA_MODE_MANUAL, target_temperature, end),
+            NA_MODE_MANUAL,
+            target_temperature,
+            end,
+        )
+
+    async def async_service_set_temperature_with_period(
+        self, target_temperature: float, time_period: timedelta
+    ) -> None:
+        """Manual setpoint for a duration."""
+        await self.async_service_set_temperature_with_end(
+            target_temperature, dt_util.utcnow() + time_period
+        )
+
+    async def async_service_clear_temperature_setting(self) -> None:
+        """Drop the manual setpoint; the room follows the home again."""
+        await self._async_write(
+            self.room.async_therm_set(NA_MODE_HOME), NA_MODE_SCHEDULE, None
+        )
+
     # --- Helpers ------------------------------------------------------------
 
     async def _async_call(self, call: Awaitable[Any]) -> None:
@@ -272,13 +328,33 @@ class NetatmoEnergyClimate(NetatmoEnergyRoomEntity, ClimateEntity):
             ) from err
 
     async def _async_write(
-        self, call: Awaitable[Any], mode: str, temp: float | None
+        self,
+        call: Awaitable[Any],
+        mode: str,
+        temp: float | None,
+        end: int | None = None,
     ) -> None:
         """Send a room write, update optimistically, then confirm from Netatmo."""
         await self._async_call(call)
         self.room.therm_setpoint_mode = mode
         if temp is not None:
             self.room.therm_setpoint_temperature = temp
+        if end is not None:
+            self.room.therm_setpoint_end_time = end
         self._update_attrs()
         self.async_write_ha_state()
         self.coordinator.async_schedule_confirm()
+
+
+def _end_timestamp(end: datetime) -> int:
+    """Return a Netatmo end time; naive datetimes are Home Assistant local time."""
+    if end.tzinfo is None:
+        end = end.replace(tzinfo=dt_util.get_default_time_zone())
+    timestamp = int(end.timestamp())
+    if timestamp <= int(dt_util.utcnow().timestamp()):
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="end_in_past",
+            translation_placeholders={"end": end.isoformat()},
+        )
+    return timestamp

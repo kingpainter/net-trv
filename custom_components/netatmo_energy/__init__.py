@@ -1,5 +1,5 @@
 """The NET-TRV integration: Netatmo relay (NAPlug) and valves (NRV)."""
-# VERSION = "0.5.0"
+# VERSION = "0.6.0"
 
 from __future__ import annotations
 
@@ -12,9 +12,11 @@ from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import (
     aiohttp_client,
     config_entry_oauth2_flow,
+    config_validation as cv,
     device_registry as dr,
 )
 from homeassistant.helpers.start import async_at_started
+from homeassistant.helpers.typing import ConfigType
 
 from .api import NetatmoEnergyAuth
 from .const import DOMAIN
@@ -26,6 +28,7 @@ from .entity import (
     valves_in,
     weather_identifier,
 )
+from .services import async_setup_services
 from .weather import PublicWeatherCoordinator, weather_area
 from .webhook import async_remove_webhook, async_setup_webhook
 
@@ -34,8 +37,17 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
     Platform.CLIMATE,
+    Platform.SELECT,
     Platform.SENSOR,
 ]
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Register the integration's actions once."""
+    async_setup_services(hass)
+    return True
 
 
 async def async_setup_entry(
@@ -136,8 +148,7 @@ def _remove_stale_devices(
     """Detach this entry from devices it no longer provides.
 
     Covers rooms without valves and the per-valve devices from 0.1.0/0.1.1.
-    Only devices of this config entry are touched; HA deletes a device once
-    no config entry references it.
+    Only devices of this config entry are touched.
     """
     registry = dr.async_get(hass)
     expected = _expected_identifiers(coordinator)
@@ -145,9 +156,9 @@ def _remove_stale_devices(
         ours = {ident for domain, ident in device.identifiers if domain == DOMAIN}
         if ours and not ours & expected:
             _LOGGER.debug("Removing stale device %s (%s)", device.name, ours)
-            registry.async_update_device(
-                device.id, remove_config_entry_id=entry.entry_id
-            )
+            # HA 2026.10+: a device belongs to one config entry, so removing
+            # the entry from it means removing the device.
+            registry.async_remove_device(device.id)
 
 
 async def async_remove_config_entry_device(

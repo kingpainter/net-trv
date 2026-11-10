@@ -126,6 +126,11 @@
       "webhook": {
         "name": "Webhook"
       }
+    },
+    "select": {
+      "schedule": {
+        "name": "Varmetidsplan"
+      }
     }
   },
   "exceptions": {
@@ -143,6 +148,18 @@
     },
     "public_weather_failed": {
       "message": "Kunne ikke hente offentligt vejr fra Netatmo: {error}"
+    },
+    "unknown_schedule": {
+      "message": "Der er ingen varmetidsplan ved navn \"{schedule}\" i Netatmo."
+    },
+    "end_in_past": {
+      "message": "Sluttidspunktet {end} ligger i fortiden."
+    },
+    "not_loaded": {
+      "message": "NET-TRV er ikke indlæst."
+    },
+    "webhook_failed": {
+      "message": "Webhook-handlingen fejlede: {error}"
     }
   },
   "options": {
@@ -163,6 +180,81 @@
   "device": {
     "public_weather": {
       "name": "Offentligt vejr"
+    }
+  },
+  "services": {
+    "set_schedule": {
+      "name": "Vælg varmetidsplan",
+      "description": "Skifter hjemmet til en anden Netatmo-varmetidsplan. Gælder alle rum.",
+      "fields": {
+        "schedule_name": {
+          "name": "Tidsplan",
+          "description": "Tidsplanens navn som i Netatmo-appen."
+        }
+      }
+    },
+    "set_preset_mode_with_end_datetime": {
+      "name": "Sæt forvalg indtil",
+      "description": "Væk eller frostsikring for hele hjemmet, eller boost for dette rum, indtil det angivne tidspunkt.",
+      "fields": {
+        "preset_mode": {
+          "name": "Forvalg",
+          "description": "Væk og frostsikring gælder hele hjemmet."
+        },
+        "end_datetime": {
+          "name": "Indtil",
+          "description": "Hvornår Netatmo vender tilbage til tidsplanen."
+        }
+      }
+    },
+    "set_temperature_with_end_datetime": {
+      "name": "Sæt temperatur indtil",
+      "description": "Manuelt setpunkt for rummet indtil det angivne tidspunkt.",
+      "fields": {
+        "target_temperature": {
+          "name": "Temperatur",
+          "description": "Setpunkt, 7–30 °C."
+        },
+        "end_datetime": {
+          "name": "Indtil",
+          "description": "Hvornår rummet vender tilbage til tidsplanen."
+        }
+      }
+    },
+    "set_temperature_with_time_period": {
+      "name": "Sæt temperatur i en periode",
+      "description": "Manuelt setpunkt for rummet i den angivne varighed.",
+      "fields": {
+        "target_temperature": {
+          "name": "Temperatur",
+          "description": "Setpunkt, 7–30 °C."
+        },
+        "time_period": {
+          "name": "Varighed",
+          "description": "Hvor længe setpunktet gælder."
+        }
+      }
+    },
+    "clear_temperature_setting": {
+      "name": "Ryd temperaturindstilling",
+      "description": "Fjerner det manuelle setpunkt; rummet følger tidsplanen igen."
+    },
+    "register_webhook": {
+      "name": "Registrér webhook",
+      "description": "Beder Netatmo om at sende realtidshændelser til NET-TRV igen."
+    },
+    "unregister_webhook": {
+      "name": "Afmeld webhook",
+      "description": "Beder Netatmo stoppe med at sende hændelser. NET-TRV går tilbage til polling hvert 60. sekund."
+    }
+  },
+  "selector": {
+    "timed_preset": {
+      "options": {
+        "away": "Væk",
+        "frost_guard": "Frostsikring",
+        "boost": "Boost"
+      }
     }
   }
 }

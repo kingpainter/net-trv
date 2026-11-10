@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] - 2026-11-10
+
+### Added
+- Heating schedule select on the relay device (`switchhomeschedule`).
+- Actions matching core `netatmo`: `set_schedule`,
+  `set_preset_mode_with_end_datetime` (also `boost`),
+  `set_temperature_with_end_datetime`, `set_temperature_with_time_period`,
+  `clear_temperature_setting`, `register_webhook`, `unregister_webhook`.
+
+### Fixed
+- Stale device cleanup uses `async_remove_device`; removing a config entry
+  from a device is deprecated in HA 2026.10 and stops working in 2027.8.
+
 ## [0.5.0] - 2026-11-10
 
 ### Added
