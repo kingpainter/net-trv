@@ -6,7 +6,7 @@ import hashlib
 import hmac
 import json
 from typing import Any
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from homeassistant.components import webhook
 from homeassistant.const import CONF_WEBHOOK_ID, STATE_OFF, STATE_ON
@@ -65,6 +65,27 @@ async def test_registers_with_netatmo(
     assert calls[0].kwargs["params"] == {
         "json": {"url": "https://example.com/api/webhook/test"}
     }
+    assert hass.states.get(WEBHOOK_SENSOR).state == STATE_ON
+
+
+async def test_existing_registration_is_kept(
+    hass: HomeAssistant, config_entry: MockConfigEntry, mock_api: AsyncMock
+) -> None:
+    """Netatmo already has our URL: no POST, so no delete/re-add on restart."""
+    resp = MagicMock()
+    resp.json = AsyncMock(
+        return_value={
+            "status": "ok",
+            "body": [{"url": "https://example.com/api/webhook/test"}],
+        }
+    )
+    with patch(
+        "custom_components.netatmo_energy.api.NetatmoEnergyAuth.async_get_request",
+        return_value=resp,
+    ):
+        await _setup(hass, config_entry)
+
+    assert not [c for c in mock_api.call_args_list if "webhooks/v1" in c.kwargs["url"]]
     assert hass.states.get(WEBHOOK_SENSOR).state == STATE_ON
 
 

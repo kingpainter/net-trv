@@ -6,7 +6,7 @@ Every payload is verified
 suspends slow endpoints for up to 10 min), and kept in a short ring buffer for
 diagnostics, then merged into the model by the coordinator (phase 2).
 """
-# VERSION = "0.8.0"
+# VERSION = "0.8.1"
 
 from __future__ import annotations
 
@@ -18,12 +18,13 @@ import logging
 import secrets
 from typing import Any
 
-from aiohttp import web
+from aiohttp import ClientError, web
 from homeassistant.components import webhook
 from homeassistant.const import CONF_WEBHOOK_ID
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.network import NoURLAvailableError
 from homeassistant.util import dt as dt_util
+from pyatmo.const import WEBHOOK_ENDPOINT
 from pyatmo.exceptions import ApiError
 
 from .const import CONF_CLOUDHOOK_URL, DOMAIN
@@ -148,13 +149,31 @@ async def async_setup_webhook(
     )
     entry.async_on_unload(lambda: webhook.async_unregister(hass, webhook_id))
 
-    await async_register_with_netatmo(hass, entry)
+    await async_register_with_netatmo(hass, entry, force=False)
+
+
+async def _is_registered(entry: NetatmoEnergyConfigEntry, url: str) -> bool:
+    """Return True when Netatmo already has exactly our URL for this app."""
+    try:
+        resp = await entry.runtime_data.auth.async_get_api_request(
+            endpoint=WEBHOOK_ENDPOINT
+        )
+        data = await resp.json()
+    except ApiError, ClientError, TimeoutError:
+        return False
+    body = data.get("body") if isinstance(data, dict) else None
+    return any(isinstance(item, dict) and item.get("url") == url for item in body or [])
 
 
 async def async_register_with_netatmo(
-    hass: HomeAssistant, entry: NetatmoEnergyConfigEntry
+    hass: HomeAssistant, entry: NetatmoEnergyConfigEntry, *, force: bool = True
 ) -> bool:
-    """Tell Netatmo our URL (also the ``register_webhook`` action)."""
+    """Tell Netatmo our URL (also the ``register_webhook`` action).
+
+    At startup (``force=False``) an existing registration of our URL is kept:
+    re-adding it makes Netatmo answer "conflict", and pyatmo then deletes and
+    re-adds the webhook, so every restart produced two delete/activate pairs.
+    """
     coordinator = entry.runtime_data
     state = coordinator.webhook
     webhook_id = await async_ensure_webhook_id(hass, entry)
@@ -170,6 +189,13 @@ async def async_register_with_netatmo(
         _LOGGER.warning("NET-TRV webhook not registered: %s", state.last_error)
         coordinator.async_signal_webhook()
         return False
+
+    if not force and await _is_registered(entry, url):
+        state.registered = True
+        state.last_error = None
+        _LOGGER.debug("NET-TRV webhook already registered with Netatmo")
+        coordinator.async_signal_webhook()
+        return True
 
     try:
         await coordinator.auth.async_addwebhook(url)

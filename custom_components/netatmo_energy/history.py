@@ -8,7 +8,7 @@ start with up to ``BACKFILL_DAYS`` of history from before NET-TRV.
 Once an hour each room is read from the last imported hour onward: one call
 per room, so 5 calls/hour for five rooms.
 """
-# VERSION = "0.8.0"
+# VERSION = "0.8.1"
 
 from __future__ import annotations
 

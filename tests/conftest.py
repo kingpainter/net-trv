@@ -107,9 +107,22 @@ def mock_api() -> Generator[AsyncMock]:
         resp.json = AsyncMock(return_value=body)
         return resp
 
-    with patch(
-        "custom_components.netatmo_energy.api.NetatmoEnergyAuth.async_post_request",
-        side_effect=_post,
-        autospec=False,
-    ) as mock_post:
+    async def _get(url: str, params: dict[str, Any] | None = None) -> MagicMock:
+        # webhooks/v1: no webhook registered yet unless a test says otherwise.
+        resp = MagicMock()
+        resp.json = AsyncMock(return_value={"status": "ok", "body": []})
+        return resp
+
+    with (
+        patch(
+            "custom_components.netatmo_energy.api.NetatmoEnergyAuth.async_post_request",
+            side_effect=_post,
+            autospec=False,
+        ) as mock_post,
+        patch(
+            "custom_components.netatmo_energy.api.NetatmoEnergyAuth.async_get_request",
+            side_effect=_get,
+            autospec=False,
+        ),
+    ):
         yield mock_post

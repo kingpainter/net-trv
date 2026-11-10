@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.8.1] - 2026-11-10
+
+### Fixed
+- Startup no longer re-registers a webhook Netatmo already has. Re-adding it
+  made Netatmo answer "conflict", and pyatmo then deleted and re-added the
+  webhook: two delete/activate pairs on every restart. One extra GET instead.
+  The `register_webhook` action still forces a fresh registration.
+
 ## [0.8.0] - 2026-11-10
 
 ### Added
