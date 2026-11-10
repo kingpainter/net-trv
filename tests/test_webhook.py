@@ -15,10 +15,10 @@ from homeassistant.util.aiohttp import MockRequest
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.netatmo_energy.diagnostics import (
+from custom_components.net_trv.diagnostics import (
     async_get_config_entry_diagnostics,
 )
-from custom_components.netatmo_energy.webhook import verify_signature
+from custom_components.net_trv.webhook import verify_signature
 
 from .conftest import CLIENT_SECRET
 
@@ -80,7 +80,7 @@ async def test_existing_registration_is_kept(
         }
     )
     with patch(
-        "custom_components.netatmo_energy.api.NetatmoEnergyAuth.async_get_request",
+        "custom_components.net_trv.api.NetatmoEnergyAuth.async_get_request",
         return_value=resp,
     ):
         await _setup(hass, config_entry)
@@ -209,7 +209,7 @@ async def test_diagnostics_lists_netatmo_webhooks(
         return_value={"body": [{"url": "https://hooks.example/abcdefghijkl"}]}
     )
     with patch(
-        "custom_components.netatmo_energy.api.NetatmoEnergyAuth.async_get_request",
+        "custom_components.net_trv.api.NetatmoEnergyAuth.async_get_request",
         get,
     ):
         diag = await async_get_config_entry_diagnostics(hass, config_entry)

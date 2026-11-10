@@ -1,12 +1,18 @@
 # NET-TRV
 
-[![Validate](https://github.com/OWNER/netatmo-energy/actions/workflows/validate.yml/badge.svg)](https://github.com/OWNER/netatmo-energy/actions/workflows/validate.yml)
-[![Lint and tests](https://github.com/OWNER/netatmo-energy/actions/workflows/tests.yml/badge.svg)](https://github.com/OWNER/netatmo-energy/actions/workflows/tests.yml)
+[![Release](https://img.shields.io/github/v/release/kingpainter/netatmo-energy?include_prereleases&sort=semver)](https://github.com/kingpainter/netatmo-energy/releases)
+[![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz/docs/faq/custom_repositories)
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.10%2B-18BCF2?logo=homeassistant&logoColor=white)](https://www.home-assistant.io/)
+[![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Validate](https://github.com/kingpainter/netatmo-energy/actions/workflows/validate.yml/badge.svg)](https://github.com/kingpainter/netatmo-energy/actions/workflows/validate.yml)
+[![Lint and tests](https://github.com/kingpainter/netatmo-energy/actions/workflows/tests.yml/badge.svg)](https://github.com/kingpainter/netatmo-energy/actions/workflows/tests.yml)
+[![Quality scale](https://img.shields.io/badge/quality%20scale-silver%20(target)-C0C0C0)](quality_scale.yaml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 NET-TRV is a Home Assistant custom integration for the Netatmo thermostat
 relay (NAPlug) and Netatmo smart radiator valves (NRV). It focuses only on
-heating and aims to expose everything the Netatmo Energy API offers for those
-devices.
+heating and covers what the Netatmo Energy API offers for those devices, with
+real-time updates through Netatmo's webhook.
 
 > Not affiliated with or endorsed by Netatmo.
 
@@ -15,47 +21,53 @@ devices.
 - One climate entity per Netatmo room, with `hvac_action` derived from the
   valves' heating demand (works on district heating, where there is no boiler
   behind the relay).
+- Real-time state from Netatmo's webhook (signature-verified); polling only
+  reconciles, every 5 minutes while events arrive, every minute when not.
+- Everything the core `netatmo` integration does for heating, with the same
+  action names, plus schedule editing, room history, valve position and
+  public weather.
 - Device tree: relay (hub) → one device per room with a valve. The room
   device carries the valve's serial number and firmware; rooms without a
   valve are skipped.
 - Uses its own Netatmo app with only `read_thermostat` and `write_thermostat`,
   so it does not share rate limits or the webhook with the core `netatmo`
-  integration.
+  integration. Typical use: about 15 API calls per hour of the 500 allowed.
 
-## Features (0.8.0)
+## Features (0.9.0)
 
 | Feature | Status |
 | --- | --- |
-| OAuth2 config flow with reauth | ✅ |
+| OAuth2 config flow with reauth and reconfigure | ✅ |
 | Climate per room (auto / heat / off, presets) | ✅ |
-| Polling 60 s (300 s while the webhook delivers) with rate-limit backoff | ✅ |
-| Valve and relay diagnostics (battery, signal, firmware, connection) | ✅ |
-| Netatmo webhook: registered, signature-verified, events recorded | ✅ |
-| Real-time state from webhook events (temperature, demand, setpoint, home mode, valve position) | ✅ |
-| Public weather from nearby Netatmo stations (median of the area) | ✅ |
-| Heating schedule select and the core netatmo heating actions (with end time) | ✅ |
-| Room history (`getroommeasure`) imported as long-term statistics | ✅ |
+| Real-time state from webhook events (temperature, demand, setpoint, home mode, schedule) | ✅ |
+| Valve and relay diagnostics (battery, signal, firmware, connection, valve position) | ✅ |
+| Heating schedule select and the core `netatmo` heating actions (with end time) | ✅ |
 | Schedule editing: away / frost guard temperatures, zone temperatures, rename, create | ✅ |
+| Room history (`getroommeasure`) imported as long-term statistics | ✅ |
+| Public weather from nearby Netatmo stations (median of the area) | ✅ |
+| Diagnostics with the last 50 raw webhook events (personal data redacted) | ✅ |
 
 ## Requirements
 
 - Home Assistant 2026.10 or newer.
 - A Netatmo developer app from [dev.netatmo.com](https://dev.netatmo.com/apps)
-  (client id and client secret).
+  (client id and client secret), used only by this integration.
 - A Netatmo thermostat relay (NAPlug) with radiator valves (NRV).
+- For real-time updates: Home Assistant Cloud (Nabu Casa) or an external
+  HTTPS URL on port 443.
 
 ## Installation
 
 ### HACS
 
-1. HACS → Integrations → ⋮ → Custom repositories → add this repository as
-   *Integration*.
+1. HACS → Integrations → ⋮ → Custom repositories → add
+   `https://github.com/kingpainter/netatmo-energy` as *Integration*.
 2. Install **NET-TRV** and restart Home Assistant.
 
 ### Manual
 
-Copy `custom_components/netatmo_energy` to `config/custom_components/` and
-restart Home Assistant.
+Copy `custom_components/net_trv` to `config/custom_components/` and restart
+Home Assistant.
 
 ## Configuration
 
@@ -65,6 +77,17 @@ restart Home Assistant.
    client id and secret for *NET-TRV*.
 3. Settings → Devices & services → **Add integration** → *NET-TRV* and
    sign in to Netatmo.
+4. Set up the webhook (below) for real-time updates.
+
+### Options
+
+Settings → Devices & services → NET-TRV → **Configure**:
+
+| Option | Default | What it does |
+| --- | --- | --- |
+| Import room history | On | Hourly room temperature and setpoint into long-term statistics. |
+| Show public weather | On | Weather from public Netatmo stations near you. |
+| Area | 1 km around home | Circle of stations used for public weather. |
 
 ## Entities
 
@@ -74,32 +97,33 @@ restart Home Assistant.
 | `sensor.<room>_battery` / `_battery_state` | Valve battery (% is approximate, derived from Netatmo's state). |
 | `sensor.<room>_radio_signal` | Valve radio signal to the relay, dBm. |
 | `sensor.<room>_firmware` | Valve firmware revision. |
+| `sensor.<room>_valve_position` | Raw valve motor position from the webhook (lower = more open, observed ~1700–2450; scale undocumented). Attribute `motor_cmd`. |
 | `binary_sensor.<room>_connectivity` | Valve reachable by the relay. |
-| `sensor.<room>_valve_position` | Raw valve motor position from the webhook (lower = more open, observed ~1700–2300; scale undocumented). Attribute `motor_cmd`. |
+| `select.<relay>_heating_schedule` | Active Netatmo heating schedule (e.g. Sommer / Vinter); selecting one switches the whole home. |
+| `number.<relay>_away_temperature` / `_frost_guard_temperature` | Away and frost guard temperatures of the active schedule. |
 | `sensor.<relay>_wi_fi_signal` / `_firmware` | Relay Wi-Fi signal (dBm) and firmware. |
 | `sensor.<relay>_valves_online` | Reachable valves; attributes `total` and `offline`. |
 | `binary_sensor.<relay>_connectivity` | Relay reachable by Netatmo. |
-| `select.<relay>_heating_schedule` | Active Netatmo heating schedule (e.g. Sommer / Vinter); selecting one switches the whole home. |
-| `number.<relay>_away_temperature` / `_frost_guard_temperature` | Away and frost guard temperatures of the active schedule (config entities). |
-| `binary_sensor.<relay>_webhook` | Webhook registered with Netatmo; attributes `events_received`, `last_event`, `rejected_signatures`, `last_error`. |
+| `binary_sensor.<relay>_webhook` | Webhook registered with Netatmo; attributes `events_received`, `events_applied`, `events_ignored`, `last_event`, `rejected_signatures`, `last_error`. |
+| `sensor.public_weather_*` | Temperature, humidity, pressure, precipitation (now, last hour, last 24 h), wind speed, gusts, wind direction, stations in area. |
 
 ### Actions
 
 | Action | What it does |
 | --- | --- |
-| `netatmo_energy.set_schedule` | Switch the home to a heating schedule by name. |
-| `netatmo_energy.set_preset_mode_with_end_datetime` | Away / frost guard (whole home) or boost (room) until a time. |
-| `netatmo_energy.set_temperature_with_end_datetime` | Manual setpoint until a time. |
-| `netatmo_energy.set_temperature_with_time_period` | Manual setpoint for a duration. |
-| `netatmo_energy.clear_temperature_setting` | Room back to the schedule. |
-| `netatmo_energy.set_schedule_temperature` | This room's temperature in one zone (e.g. Comfort) of a schedule. |
-| `netatmo_energy.rename_schedule` | Rename a schedule. |
-| `netatmo_energy.create_schedule` | New schedule as a copy of an existing one. |
-| `netatmo_energy.register_webhook` / `unregister_webhook` | Start or stop Netatmo's real-time events. |
+| `net_trv.set_schedule` | Switch the home to a heating schedule by name. |
+| `net_trv.set_preset_mode_with_end_datetime` | Away / frost guard (whole home) or boost (room) until a time. |
+| `net_trv.set_temperature_with_end_datetime` | Manual setpoint until a time. |
+| `net_trv.set_temperature_with_time_period` | Manual setpoint for a duration. |
+| `net_trv.clear_temperature_setting` | Room back to the schedule. |
+| `net_trv.set_schedule_temperature` | This room's temperature in one zone (e.g. Comfort) of a schedule. |
+| `net_trv.rename_schedule` | Rename a schedule. |
+| `net_trv.create_schedule` | New schedule as a copy of an existing one. |
+| `net_trv.register_webhook` / `unregister_webhook` | Start or stop Netatmo's real-time events. |
 
 The first five target NET-TRV climate entities and match the core `netatmo`
-actions of the same name, so automations can be moved by changing the domain.
-Times without a time zone are Home Assistant local time.
+actions of the same name, so automations move over by changing `netatmo.` to
+`net_trv.`. Times without a time zone are Home Assistant local time.
 
 Schedule edits read the schedule fresh from Netatmo and send it back whole
 with only the requested change, because `synchomeschedule` replaces the full
@@ -110,11 +134,10 @@ and a delete cannot be undone; use the Netatmo app.
 
 Every hour NET-TRV reads each room's hourly temperature (mean, min, max) and
 setpoint from Netatmo and adds them to Home Assistant's long-term statistics
-as `netatmo_energy:<room_id>_temperature` and `netatmo_energy:<room_id>_setpoint`.
-The first run imports the last 30 days, so graphs start with history from
-before NET-TRV and have no gaps when Home Assistant was down. Use them in a
-**Statistics graph** card. One call per room per hour; it needs the recorder
-and can be switched off under **Configure**.
+as `net_trv:<room_id>_temperature` and `net_trv:<room_id>_setpoint`. The first
+run imports the last 30 days, so graphs start with history from before
+NET-TRV and have no gaps when Home Assistant was down. Use them in a
+**Statistics graph** card. One call per room per hour; it needs the recorder.
 
 Netatmo's API has no heating time per room; `getroommeasure` only offers
 temperature, setpoint and daily min/max.
@@ -122,15 +145,10 @@ temperature, setpoint and daily min/max.
 ### Public weather
 
 A **Public weather** service device shows weather from public Netatmo
-stations around your home: temperature, humidity, pressure, precipitation
-(now, last hour, last 24 hours), wind speed, gusts and wind direction. Each
-value is the median of the stations in the area (wind direction a circular
-mean), and its `stations` attribute says how many stations reported it.
-
-Set the area under **Settings → Devices & services → NET-TRV → Configure**.
-The default is a 1 km circle around Home Assistant's home location; it can
-also be switched off there. It is read every 10 minutes (6 API calls per
-hour) on its own coordinator, so a weather outage never affects heating.
+stations around your home. Each value is the median of the stations in the
+area (wind direction a circular mean), and its `stations` attribute says how
+many stations reported it. It is read every 10 minutes (6 API calls per hour)
+on its own coordinator, so a weather outage never affects heating.
 
 ### Modes and presets
 
@@ -154,29 +172,42 @@ when you sign in:
 3. Settings → Devices & services → NET-TRV → ⋮ → **Reconfigure** and sign in
    to Netatmo again.
 
-The integration also registers the webhook through the API once Home
-Assistant has started. It uses your Nabu Casa cloudhook when available, otherwise your
-external URL, which must be HTTPS on port 443. Netatmo allows one webhook per
-app, so use a dedicated Netatmo app for this integration.
+NET-TRV registers the webhook through the API once Home Assistant has started
+and keeps an existing registration. Netatmo allows one webhook per app, so
+use a dedicated Netatmo app for this integration. Every event is checked
+against the HMAC signature Netatmo sends; unsigned or wrong calls get 401.
 
-Download diagnostics from the integration page to see the last 50 raw events.
+## Removal
+
+1. Settings → Devices & services → NET-TRV → ⋮ → **Delete**. This also
+   removes the Nabu Casa cloudhook.
+2. Optional: remove the application credentials and delete the Netatmo app on
+   dev.netatmo.com.
+3. Remove `custom_components/net_trv` (or uninstall in HACS) and restart.
+
+Imported room history stays in long-term statistics until you delete it under
+Developer tools → Statistics.
 
 ## Troubleshooting
+
+Download diagnostics from the integration page: it shows the webhook state,
+API calls in the last hour, room history and weather status, and the last 50
+raw events.
 
 Enable debug logging:
 
 ```yaml
 logger:
   logs:
-    custom_components.netatmo_energy: debug
+    custom_components.net_trv: debug
     pyatmo: debug
 ```
 
 ## Known limitations
 
 - Netatmo only exposes data through its cloud; there is no local API.
-- Valve position is not available; `heating_power_request` (0–100 %) is the
-  closest signal.
+- Valve position comes only from webhook events, as a raw motor value.
+- No heating time per room and no schedule deletion (not in the API).
 - The integration requires the same `pyatmo` version as Home Assistant's core
   `netatmo` integration while both are installed.
 
@@ -186,4 +217,4 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
-MIT
+[MIT](LICENSE)

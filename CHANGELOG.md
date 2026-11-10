@@ -4,6 +4,21 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.9.0] - 2026-11-10
+
+### Changed (breaking)
+- Domain renamed from `netatmo_energy` to `net_trv`; the integration now
+  lives in `custom_components/net_trv`. Home Assistant treats it as a new
+  integration: add the application credentials and set it up again, set the
+  new webhook URL on the Netatmo app and sign in once more. Entity ids,
+  actions (`net_trv.*`) and statistic ids (`net_trv:<room_id>_...`) change.
+- Manifest points to `kingpainter/netatmo-energy`; `@kingpainter` is code
+  owner.
+
+### Docs
+- README: badges, options table, removal instructions, actions under the new
+  domain.
+
 ## [0.8.1] - 2026-11-10
 
 ### Fixed

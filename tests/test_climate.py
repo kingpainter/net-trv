@@ -20,8 +20,8 @@ from homeassistant.helpers import area_registry as ar, device_registry as dr
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.netatmo_energy.climate import resolve_action, resolve_state
-from custom_components.netatmo_energy.const import DOMAIN
+from custom_components.net_trv.climate import resolve_action, resolve_state
+from custom_components.net_trv.const import DOMAIN
 
 pytestmark = pytest.mark.usefixtures("credentials")
 

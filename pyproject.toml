@@ -1,6 +1,6 @@
 [project]
-name = "netatmo-energy"
-version = "0.8.1"
+name = "net-trv"
+version = "0.9.0"
 requires-python = ">=3.14"
 
 [tool.ruff]
@@ -13,7 +13,7 @@ ignore = ["D203", "D213", "PLR0911", "PLR0913", "PLR2004", "D105", "D107", "RUF0
 
 [tool.ruff.lint.isort]
 force-sort-within-sections = true
-known-first-party = ["custom_components.netatmo_energy"]
+known-first-party = ["custom_components.net_trv"]
 combine-as-imports = true
 
 [tool.ruff.lint.per-file-ignores]

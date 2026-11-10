@@ -10,7 +10,7 @@ from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers import config_entry_oauth2_flow
 import pytest
 
-from custom_components.netatmo_energy.const import (
+from custom_components.net_trv.const import (
     DOMAIN,
     OAUTH2_AUTHORIZE,
     OAUTH2_TOKEN,
@@ -55,7 +55,7 @@ async def test_full_flow(
     )
 
     with patch(
-        "custom_components.netatmo_energy.async_setup_entry", return_value=True
+        "custom_components.net_trv.async_setup_entry", return_value=True
     ) as mock_setup:
         result = await hass.config_entries.flow.async_configure(result["flow_id"])
 
@@ -105,7 +105,7 @@ async def test_reconfigure_keeps_webhook_id(
             "expires_in": 3600,
         },
     )
-    with patch("custom_components.netatmo_energy.async_setup_entry", return_value=True):
+    with patch("custom_components.net_trv.async_setup_entry", return_value=True):
         result = await hass.config_entries.flow.async_configure(result["flow_id"])
 
     assert result["type"] is FlowResultType.ABORT

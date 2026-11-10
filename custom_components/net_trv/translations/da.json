@@ -1,0 +1,321 @@
+{
+  "config": {
+    "step": {
+      "pick_implementation": {
+        "title": "Vælg godkendelsesmetode"
+      },
+      "reauth_confirm": {
+        "title": "Godkend integrationen igen",
+        "description": "NET-TRV skal have dig til at logge ind hos Netatmo igen."
+      },
+      "reconfigure": {
+        "title": "Log ind hos Netatmo igen",
+        "description": "Logger ind hos Netatmo igen uden at fjerne NET-TRV. Brug det, efter du har sat eller ændret webhook-URL'en på din Netatmo-app: Netatmo knytter kun webhooken til din konto, når du logger ind."
+      }
+    },
+    "abort": {
+      "already_configured": "Kontoen er allerede konfigureret",
+      "single_instance_allowed": "Allerede konfigureret. Kun én konfiguration er mulig.",
+      "authorize_url_timeout": "Timeout ved generering af godkendelses-URL.",
+      "missing_configuration": "Integrationen er ikke konfigureret. Følg dokumentationen.",
+      "missing_credentials": "Integrationen kræver application credentials.",
+      "no_url_available": "Ingen URL tilgængelig. Se hjælpeafsnittet for information om fejlen.",
+      "oauth_error": "Modtog ugyldige token-data.",
+      "oauth_failed": "Fejl ved hentning af adgangstoken.",
+      "oauth_timeout": "Timeout ved hentning af OAuth-token.",
+      "oauth_unauthorized": "OAuth-godkendelsesfejl ved hentning af adgangstoken.",
+      "user_rejected_authorize": "Kontotilknytning afvist.",
+      "reauth_successful": "Gengodkendelse lykkedes",
+      "reconfigure_successful": "Genkonfigurationen lykkedes"
+    },
+    "create_entry": {
+      "default": "Godkendt"
+    }
+  },
+  "entity": {
+    "climate": {
+      "room": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "schedule": "Ugeplan",
+              "away": "Ude",
+              "frost_guard": "Frostsikring",
+              "boost": "Boost"
+            }
+          }
+        }
+      }
+    },
+    "sensor": {
+      "battery_state": {
+        "name": "Batteritilstand",
+        "state": {
+          "max": "Maks",
+          "full": "Fuld",
+          "high": "Høj",
+          "medium": "Middel",
+          "low": "Lav",
+          "very_low": "Meget lav"
+        }
+      },
+      "battery_state_multi": {
+        "name": "Batteritilstand {valve}",
+        "state": {
+          "max": "Maks",
+          "full": "Fuld",
+          "high": "Høj",
+          "medium": "Middel",
+          "low": "Lav",
+          "very_low": "Meget lav"
+        }
+      },
+      "battery_multi": {
+        "name": "Batteri {valve}"
+      },
+      "rf_strength": {
+        "name": "Radiosignal"
+      },
+      "rf_strength_multi": {
+        "name": "Radiosignal {valve}"
+      },
+      "firmware": {
+        "name": "Firmware"
+      },
+      "firmware_multi": {
+        "name": "Firmware {valve}"
+      },
+      "wifi_strength": {
+        "name": "Wi-Fi-signal"
+      },
+      "valves_online": {
+        "name": "Ventiler online"
+      },
+      "valve_position": {
+        "name": "Ventilposition"
+      },
+      "valve_position_multi": {
+        "name": "Ventilposition {valve}"
+      },
+      "rain_live": {
+        "name": "Nedbør"
+      },
+      "rain_60min": {
+        "name": "Nedbør seneste time"
+      },
+      "rain_24h": {
+        "name": "Nedbør seneste 24 timer"
+      },
+      "wind_strength": {
+        "name": "Vindhastighed"
+      },
+      "gust_strength": {
+        "name": "Vindstød"
+      },
+      "wind_angle": {
+        "name": "Vindretning"
+      },
+      "weather_stations": {
+        "name": "Stationer i området"
+      }
+    },
+    "binary_sensor": {
+      "connectivity_multi": {
+        "name": "Forbindelse {valve}"
+      },
+      "webhook": {
+        "name": "Webhook"
+      }
+    },
+    "select": {
+      "schedule": {
+        "name": "Varmetidsplan"
+      }
+    },
+    "number": {
+      "away_temp": {
+        "name": "Temperatur ved væk"
+      },
+      "frost_guard_temp": {
+        "name": "Frostsikringstemperatur"
+      }
+    }
+  },
+  "exceptions": {
+    "no_energy_home": {
+      "message": "Der blev ikke fundet et Netatmo-hjem med termostatrelæ på kontoen."
+    },
+    "unsupported_hvac_mode": {
+      "message": "HVAC-tilstanden {mode} understøttes ikke."
+    },
+    "unsupported_preset": {
+      "message": "Forudindstillingen {preset} understøttes ikke."
+    },
+    "api_error": {
+      "message": "Netatmo afviste forespørgslen: {error}"
+    },
+    "public_weather_failed": {
+      "message": "Kunne ikke hente offentligt vejr fra Netatmo: {error}"
+    },
+    "unknown_schedule": {
+      "message": "Der er ingen varmetidsplan ved navn \"{schedule}\" i Netatmo."
+    },
+    "end_in_past": {
+      "message": "Sluttidspunktet {end} ligger i fortiden."
+    },
+    "not_loaded": {
+      "message": "NET-TRV er ikke indlæst."
+    },
+    "webhook_failed": {
+      "message": "Webhook-handlingen fejlede: {error}"
+    },
+    "unknown_zone": {
+      "message": "Tidsplanen \"{schedule}\" har ingen zone ved navn \"{zone}\". Zoner: {zones}."
+    },
+    "schedule_exists": {
+      "message": "Der findes allerede en tidsplan ved navn \"{schedule}\"."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Indstillinger",
+        "description": "**Rumhistorik:** NET-TRV henter hver time rummenes temperatur og setpunkt fra Netatmo og gemmer dem i langtidsstatistikken (op til 30 dage bagud første gang), så graferne ikke har huller.\n\n**Offentligt vejr:** vejret fra offentlige Netatmo-stationer i nærheden. Værdien er medianen af alle stationer i cirklen, så én dårligt placeret station ikke trækker skævt.",
+        "data": {
+          "weather_enabled": "Vis offentligt vejr",
+          "weather_location": "Område",
+          "history_enabled": "Importér rumhistorik"
+        },
+        "data_description": {
+          "weather_location": "Stationer inden for cirklen bruges. 1 km er en god start i byen; brug mere på landet."
+        }
+      }
+    }
+  },
+  "device": {
+    "public_weather": {
+      "name": "Offentligt vejr"
+    }
+  },
+  "services": {
+    "set_schedule": {
+      "name": "Vælg varmetidsplan",
+      "description": "Skifter hjemmet til en anden Netatmo-varmetidsplan. Gælder alle rum.",
+      "fields": {
+        "schedule_name": {
+          "name": "Tidsplan",
+          "description": "Tidsplanens navn som i Netatmo-appen."
+        }
+      }
+    },
+    "set_preset_mode_with_end_datetime": {
+      "name": "Sæt forvalg indtil",
+      "description": "Væk eller frostsikring for hele hjemmet, eller boost for dette rum, indtil det angivne tidspunkt.",
+      "fields": {
+        "preset_mode": {
+          "name": "Forvalg",
+          "description": "Væk og frostsikring gælder hele hjemmet."
+        },
+        "end_datetime": {
+          "name": "Indtil",
+          "description": "Hvornår Netatmo vender tilbage til tidsplanen."
+        }
+      }
+    },
+    "set_temperature_with_end_datetime": {
+      "name": "Sæt temperatur indtil",
+      "description": "Manuelt setpunkt for rummet indtil det angivne tidspunkt.",
+      "fields": {
+        "target_temperature": {
+          "name": "Temperatur",
+          "description": "Setpunkt, 7–30 °C."
+        },
+        "end_datetime": {
+          "name": "Indtil",
+          "description": "Hvornår rummet vender tilbage til tidsplanen."
+        }
+      }
+    },
+    "set_temperature_with_time_period": {
+      "name": "Sæt temperatur i en periode",
+      "description": "Manuelt setpunkt for rummet i den angivne varighed.",
+      "fields": {
+        "target_temperature": {
+          "name": "Temperatur",
+          "description": "Setpunkt, 7–30 °C."
+        },
+        "time_period": {
+          "name": "Varighed",
+          "description": "Hvor længe setpunktet gælder."
+        }
+      }
+    },
+    "clear_temperature_setting": {
+      "name": "Ryd temperaturindstilling",
+      "description": "Fjerner det manuelle setpunkt; rummet følger tidsplanen igen."
+    },
+    "register_webhook": {
+      "name": "Registrér webhook",
+      "description": "Beder Netatmo om at sende realtidshændelser til NET-TRV igen."
+    },
+    "unregister_webhook": {
+      "name": "Afmeld webhook",
+      "description": "Beder Netatmo stoppe med at sende hændelser. NET-TRV går tilbage til polling hvert 60. sekund."
+    },
+    "set_schedule_temperature": {
+      "name": "Sæt temperatur i tidsplan",
+      "description": "Ændrer rummets temperatur i én zone (fx Komfort, Nat) af en varmetidsplan. Netatmo bruger den hver gang zonen er aktiv.",
+      "fields": {
+        "zone_name": {
+          "name": "Zone",
+          "description": "Zonens navn som i Netatmo-appen."
+        },
+        "temperature": {
+          "name": "Temperatur",
+          "description": "7–30 °C."
+        },
+        "schedule_name": {
+          "name": "Tidsplan",
+          "description": "Lad stå tom for den aktive tidsplan."
+        }
+      }
+    },
+    "rename_schedule": {
+      "name": "Omdøb tidsplan",
+      "description": "Omdøber en Netatmo-varmetidsplan.",
+      "fields": {
+        "schedule_name": {
+          "name": "Tidsplan",
+          "description": "Nuværende navn."
+        },
+        "new_name": {
+          "name": "Nyt navn",
+          "description": "Tidsplanens nye navn."
+        }
+      }
+    },
+    "create_schedule": {
+      "name": "Opret tidsplan",
+      "description": "Opretter en ny varmetidsplan som kopi af en eksisterende. Ret den bagefter med Sæt temperatur i tidsplan eller i Netatmo-appen.",
+      "fields": {
+        "name": {
+          "name": "Navn",
+          "description": "Den nye tidsplans navn."
+        },
+        "copy_from": {
+          "name": "Kopiér fra",
+          "description": "Lad stå tom for at kopiere den aktive tidsplan."
+        }
+      }
+    }
+  },
+  "selector": {
+    "timed_preset": {
+      "options": {
+        "away": "Væk",
+        "frost_guard": "Frostsikring",
+        "boost": "Boost"
+      }
+    }
+  }
+}

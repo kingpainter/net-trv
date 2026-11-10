@@ -12,11 +12,11 @@ from pyatmo.exceptions import ApiError
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.netatmo_energy.const import (
+from custom_components.net_trv.const import (
     CONF_WEATHER_ENABLED,
     CONF_WEATHER_LOCATION,
 )
-from custom_components.netatmo_energy.weather import Area, aggregate
+from custom_components.net_trv.weather import Area, aggregate
 
 from .conftest import load_fixture
 
@@ -136,5 +136,5 @@ async def test_options_disable_and_move_area(
     )
     registry = dr.async_get(hass)
     assert not registry.async_get_devices(
-        identifiers={("netatmo_energy", f"{config_entry.entry_id}-public_weather")}
+        identifiers={("net_trv", f"{config_entry.entry_id}-public_weather")}
     )

@@ -1,0 +1,28 @@
+{
+  "domain": "net_trv",
+  "name": "NET-TRV",
+  "after_dependencies": [
+    "cloud",
+    "recorder"
+  ],
+  "codeowners": [
+    "@kingpainter"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "application_credentials",
+    "webhook"
+  ],
+  "documentation": "https://github.com/kingpainter/netatmo-energy",
+  "integration_type": "hub",
+  "iot_class": "cloud_push",
+  "issue_tracker": "https://github.com/kingpainter/netatmo-energy/issues",
+  "loggers": [
+    "pyatmo"
+  ],
+  "requirements": [
+    "pyatmo==9.9.0"
+  ],
+  "single_config_entry": true,
+  "version": "0.9.0"
+}

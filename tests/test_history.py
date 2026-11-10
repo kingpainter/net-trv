@@ -17,7 +17,7 @@ from pytest_homeassistant_custom_component.components.recorder.common import (
     async_wait_recording_done,
 )
 
-from custom_components.netatmo_energy.history import (
+from custom_components.net_trv.history import (
     BACKFILL_DAYS,
     parse_room_measure,
     to_statistics,
@@ -33,8 +33,8 @@ def auto_enable_custom_integrations(
     """Start the recorder before hass (overrides the conftest fixture)."""
 
 
-STUEN_TEMP = "netatmo_energy:1001_temperature"
-STUEN_SETPOINT = "netatmo_energy:1001_setpoint"
+STUEN_TEMP = "net_trv:1001_temperature"
+STUEN_SETPOINT = "net_trv:1001_setpoint"
 
 
 def test_parse_both_formats() -> None:

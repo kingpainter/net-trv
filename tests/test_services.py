@@ -18,7 +18,7 @@ from homeassistant.util import dt as dt_util
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.netatmo_energy.const import DOMAIN
+from custom_components.net_trv.const import DOMAIN
 
 pytestmark = pytest.mark.usefixtures("credentials")
 
@@ -178,7 +178,7 @@ async def test_webhook_actions(
     assert webhook.registered
 
     with patch(
-        "custom_components.netatmo_energy.api.NetatmoEnergyAuth.async_dropwebhook"
+        "custom_components.net_trv.api.NetatmoEnergyAuth.async_dropwebhook"
     ) as drop:
         await hass.services.async_call(DOMAIN, "unregister_webhook", blocking=True)
     drop.assert_awaited_once()

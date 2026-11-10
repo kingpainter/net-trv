@@ -19,7 +19,7 @@ from homeassistant.core import HomeAssistant
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.netatmo_energy.realtime import (
+from custom_components.net_trv.realtime import (
     EventFilter,
     normalize_payload,
     valve_position,

@@ -18,7 +18,7 @@ from homeassistant.setup import async_setup_component
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.netatmo_energy.const import DOMAIN
+from custom_components.net_trv.const import DOMAIN
 
 FIXTURES = Path(__file__).parent / "fixtures"
 CLIENT_ID = "client-id"
@@ -38,7 +38,7 @@ def webhook_url(request: pytest.FixtureRequest) -> Generator[str | None]:
     """
     url = getattr(request, "param", "https://example.com/api/webhook/test")
     with patch(
-        "custom_components.netatmo_energy.webhook._async_webhook_url",
+        "custom_components.net_trv.webhook._async_webhook_url",
         return_value=url,
     ):
         yield url
@@ -115,12 +115,12 @@ def mock_api() -> Generator[AsyncMock]:
 
     with (
         patch(
-            "custom_components.netatmo_energy.api.NetatmoEnergyAuth.async_post_request",
+            "custom_components.net_trv.api.NetatmoEnergyAuth.async_post_request",
             side_effect=_post,
             autospec=False,
         ) as mock_post,
         patch(
-            "custom_components.netatmo_energy.api.NetatmoEnergyAuth.async_get_request",
+            "custom_components.net_trv.api.NetatmoEnergyAuth.async_get_request",
             side_effect=_get,
             autospec=False,
         ),

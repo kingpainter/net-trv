@@ -17,7 +17,7 @@ from homeassistant.helpers import entity_registry as er
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.netatmo_energy.const import DOMAIN
+from custom_components.net_trv.const import DOMAIN
 
 pytestmark = pytest.mark.usefixtures("credentials")
 
