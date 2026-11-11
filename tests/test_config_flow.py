@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
-from unittest.mock import patch
+from typing import Any
+from unittest.mock import AsyncMock, MagicMock, patch
 
+from aiohttp import ClientError
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers import config_entry_oauth2_flow
+from pyatmo.exceptions import ApiError
 import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.net_trv.const import (
     DOMAIN,
@@ -16,10 +20,51 @@ from custom_components.net_trv.const import (
     OAUTH2_TOKEN,
 )
 
-from .conftest import CLIENT_ID
+from .conftest import CLIENT_ID, load_fixture
+
+POST = "custom_components.net_trv.api.NetatmoEnergyAuth.async_post_request"
 
 
-@pytest.mark.usefixtures("credentials", "current_request_with_host")
+async def _finish_oauth(
+    hass: HomeAssistant,
+    hass_client_no_auth: Any,
+    aioclient_mock: Any,
+    flow_id: str,
+    access: str = "access",
+) -> dict[str, Any]:
+    """Run the external OAuth step and return the final flow result."""
+    state = config_entry_oauth2_flow._encode_jwt(
+        hass,
+        {
+            "flow_id": flow_id,
+            "redirect_uri": "https://example.com/auth/external/callback",
+        },
+    )
+    client = await hass_client_no_auth()
+    resp = await client.get(f"/auth/external/callback?code=abcd&state={state}")
+    assert resp.status == 200
+    aioclient_mock.post(
+        OAUTH2_TOKEN,
+        json={
+            "refresh_token": "refresh",
+            "access_token": access,
+            "type": "Bearer",
+            "expires_in": 3600,
+        },
+    )
+    with patch("custom_components.net_trv.async_setup_entry", return_value=True):
+        return await hass.config_entries.flow.async_configure(flow_id)
+
+
+def _homesdata_without_relay() -> dict[str, Any]:
+    body = load_fixture("homesdata.json")
+    for home in body["body"]["homes"]:
+        home["modules"] = []
+        home["rooms"] = []
+    return body
+
+
+@pytest.mark.usefixtures("credentials", "current_request_with_host", "mock_api")
 async def test_full_flow(
     hass: HomeAssistant, hass_client_no_auth, aioclient_mock
 ) -> None:
@@ -65,7 +110,7 @@ async def test_full_flow(
     assert len(mock_setup.mock_calls) == 1
 
 
-@pytest.mark.usefixtures("credentials", "current_request_with_host")
+@pytest.mark.usefixtures("credentials", "current_request_with_host", "mock_api")
 async def test_reconfigure_keeps_webhook_id(
     hass: HomeAssistant, hass_client_no_auth, aioclient_mock, config_entry
 ) -> None:
@@ -113,3 +158,84 @@ async def test_reconfigure_keeps_webhook_id(
     assert config_entry.data["token"]["access_token"] == "new-access"
     assert config_entry.data["webhook_id"] == "keep-me"
     assert config_entry.data["cloudhook_url"] == "https://hooks.example/keep-me"
+
+
+@pytest.mark.usefixtures("credentials", "current_request_with_host")
+@pytest.mark.parametrize(
+    ("side_effect", "reason"),
+    [
+        (ApiError("boom"), "cannot_connect"),
+        (ClientError("down"), "cannot_connect"),
+        (TimeoutError(), "cannot_connect"),
+    ],
+)
+async def test_abort_when_netatmo_fails(
+    hass: HomeAssistant,
+    hass_client_no_auth: Any,
+    aioclient_mock: Any,
+    side_effect: Exception,
+    reason: str,
+) -> None:
+    """test-before-configure: no entry when /homesdata cannot be read."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    with patch(POST, side_effect=side_effect):
+        result = await _finish_oauth(
+            hass, hass_client_no_auth, aioclient_mock, result["flow_id"]
+        )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == reason
+    assert not hass.config_entries.async_entries(DOMAIN)
+
+
+@pytest.mark.usefixtures("credentials", "current_request_with_host")
+@pytest.mark.parametrize(
+    "body",
+    [
+        _homesdata_without_relay(),
+        {"status": "ok", "body": {"homes": [], "user": {}}},
+    ],
+    ids=["no_relay", "no_homes"],
+)
+async def test_abort_without_energy_home(
+    hass: HomeAssistant,
+    hass_client_no_auth: Any,
+    aioclient_mock: Any,
+    body: dict[str, Any],
+) -> None:
+    """test-before-configure: an account without a relay is refused."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    resp = MagicMock()
+    resp.json = AsyncMock(return_value=body)
+    with patch(POST, return_value=resp):
+        result = await _finish_oauth(
+            hass, hass_client_no_auth, aioclient_mock, result["flow_id"]
+        )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "no_energy_home"
+    assert not hass.config_entries.async_entries(DOMAIN)
+
+
+@pytest.mark.usefixtures("credentials", "current_request_with_host", "mock_api")
+async def test_reauth(
+    hass: HomeAssistant,
+    hass_client_no_auth: Any,
+    aioclient_mock: Any,
+    config_entry: MockConfigEntry,
+) -> None:
+    config_entry.add_to_hass(hass)
+    result = await config_entry.start_reauth_flow(hass)
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "reauth_confirm"
+
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    assert result["type"] is FlowResultType.EXTERNAL_STEP
+    result = await _finish_oauth(
+        hass, hass_client_no_auth, aioclient_mock, result["flow_id"], "re-access"
+    )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reauth_successful"
+    assert config_entry.data["token"]["access_token"] == "re-access"

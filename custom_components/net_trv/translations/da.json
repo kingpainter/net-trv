@@ -26,7 +26,9 @@
       "oauth_unauthorized": "OAuth-godkendelsesfejl ved hentning af adgangstoken.",
       "user_rejected_authorize": "Kontotilknytning afvist.",
       "reauth_successful": "Gengodkendelse lykkedes",
-      "reconfigure_successful": "Genkonfigurationen lykkedes"
+      "reconfigure_successful": "Genkonfigurationen lykkedes",
+      "cannot_connect": "Kunne ikke forbinde til Netatmo. Prøv igen senere.",
+      "no_energy_home": "Der blev ikke fundet et Netatmo-hjem med termostatrelæ på kontoen."
     },
     "create_entry": {
       "default": "Godkendt"

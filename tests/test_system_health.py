@@ -44,3 +44,17 @@ async def test_system_health(
     assert info["api_calls_last_hour"].endswith("/ 500")
     assert info["public_weather"] == "ok"
     assert info["room_history"] == "off"  # no recorder in this test
+
+
+async def test_system_health_without_entry(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """Without a loaded entry only the reachability check is shown."""
+    aioclient_mock.get(NETATMO_API, text="")
+    assert await async_setup_component(hass, DOMAIN, {})
+    assert await async_setup_component(hass, "system_health", {})
+    await hass.async_block_till_done()
+
+    info = await get_system_health_info(hass, DOMAIN)
+    assert list(info) == ["can_reach_server"]
+    assert await info["can_reach_server"] == "ok"

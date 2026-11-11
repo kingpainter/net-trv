@@ -1,6 +1,6 @@
 # Integration Quality Scale status for net_trv.
 # Rules: https://contributors.home-assistant.io/core/quality-scale/
-# Target: Platinum (Silver in 0.10.0, Gold in 0.11.0).
+# Reached: Silver (0.10.0). Target: Platinum (Gold in 0.11.0).
 # Values: done | todo | exempt (with comment).
 rules:
   # Bronze
@@ -30,8 +30,8 @@ rules:
   has-entity-name: done
   runtime-data: done
   test-before-configure:
-    status: todo
-    comment: OAuth flow does not call the API before creating the entry yet (0.10.0).
+    status: done
+    comment: The OAuth flow reads /homesdata with the new token before creating or updating the entry.
   test-before-setup: done
   unique-config-entry: done
 
@@ -46,18 +46,21 @@ rules:
   parallel-updates: done
   reauthentication-flow: done
   test-coverage:
-    status: todo
-    comment: 92 % (2026-11-10); weakest webhook.py, api.py, coordinator.py (0.10.0).
+    status: done
+    comment: 97 % (2026-11-11).
 
   # Gold
   devices: done
   diagnostics: done
   discovery:
-    status: exempt
-    comment: Cloud account (OAuth); the relay cannot be discovered for the Netatmo API.
+    status: todo
+    comment: >-
+      The relay announces itself over HomeKit (model "Netatmo Relay"). Check
+      first whether a manifest match takes unpaired relays away from HomeKit
+      Device (local fallback); if so, mark exempt with that reason (0.11.0).
   discovery-update-info:
     status: exempt
-    comment: No discovery.
+    comment: Cloud API only; the device IP address is never used.
   docs-data-update:
     status: todo
     comment: Webhook and polling are described, but not in one dedicated section (0.11.0).

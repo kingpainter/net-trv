@@ -4,6 +4,27 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.10.0] - 2026-11-11
+
+Quality scale: Silver.
+
+### Added
+- Config flow tests the account before creating or updating the entry: it
+  reads `/homesdata` with the new token and aborts with `cannot_connect`
+  (API error, network error or timeout) or `no_energy_home` (no relay on the
+  account). Quality scale rule `test-before-configure`.
+- System health links to dev.netatmo.com/apps (`manage_url`).
+- `"quality_scale": "silver"` in the manifest.
+
+### Changed
+- System health reads loaded entries with `async_loaded_entries`.
+
+### Tests
+- Coverage 92 % → 97 % (95 tests): coordinator error mapping, relay outage,
+  webhook merge errors; webhook URL choice (Nabu Casa, external URL, no
+  HTTPS), failed registration and bad bodies; API call counter; reauth and
+  the new config flow aborts.
+
 ## [0.9.2] - 2026-11-10
 
 ### Docs

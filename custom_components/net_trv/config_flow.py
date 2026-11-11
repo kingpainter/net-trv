@@ -1,5 +1,5 @@
 """Config flow for NET-TRV (OAuth2 against the user's own Netatmo app)."""
-# VERSION = "0.9.2"
+# VERSION = "0.10.0"
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ from collections.abc import Mapping
 import logging
 from typing import Any, override
 
+from aiohttp import ClientError
 from homeassistant.config_entries import (
     SOURCE_REAUTH,
     SOURCE_RECONFIGURE,
@@ -17,8 +18,12 @@ from homeassistant.config_entries import (
 from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_RADIUS
 from homeassistant.core import callback
 from homeassistant.helpers import config_entry_oauth2_flow, selector
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import probatio as vol
+import pyatmo
+from pyatmo.exceptions import ApiError, NoDeviceError
 
+from .api import NetatmoTokenAuth
 from .const import (
     API_SCOPES,
     CONF_HISTORY_ENABLED,
@@ -27,6 +32,7 @@ from .const import (
     DEFAULT_WEATHER_RADIUS,
     DOMAIN,
 )
+from .coordinator import is_energy_home
 
 
 class NetatmoEnergyFlowHandler(
@@ -92,7 +98,12 @@ class NetatmoEnergyFlowHandler(
         ``data_updates`` merges the new token into the entry, so the webhook
         id and Nabu Casa cloudhook URL survive and the webhook URL stays the
         same.
+
+        Every source first reads /homesdata with the new token, so a broken
+        account or one without a relay never ends up as an entry.
         """
+        if error := await self._async_check_account(data):
+            return self.async_abort(reason=error)
         if self.source == SOURCE_REAUTH:
             return self.async_update_reload_and_abort(
                 self._get_reauth_entry(), data_updates=data
@@ -102,6 +113,24 @@ class NetatmoEnergyFlowHandler(
                 self._get_reconfigure_entry(), data_updates=data
             )
         return self.async_create_entry(title="NET-TRV", data=data)
+
+    async def _async_check_account(self, data: dict[str, Any]) -> str | None:
+        """Return an abort reason, or None when the account has a relay."""
+        auth = NetatmoTokenAuth(
+            async_get_clientsession(self.hass), data["token"]["access_token"]
+        )
+        account = pyatmo.AsyncAccount(auth)
+        try:
+            await account.async_update_topology()
+        except NoDeviceError:
+            # pyatmo raises this when /homesdata holds no homes at all.
+            return "no_energy_home"
+        except (ApiError, ClientError, TimeoutError) as err:
+            self.logger.warning("Could not read Netatmo homes: %s", err)
+            return "cannot_connect"
+        if not any(is_energy_home(home) for home in account.homes.values()):
+            return "no_energy_home"
+        return None
 
 
 class NetatmoEnergyOptionsFlow(OptionsFlowWithReload):

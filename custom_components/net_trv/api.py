@@ -1,5 +1,5 @@
 """Netatmo API authentication bound to a Home Assistant OAuth2 config entry."""
-# VERSION = "0.9.2"
+# VERSION = "0.10.0"
 
 from __future__ import annotations
 
@@ -74,3 +74,23 @@ class NetatmoEnergyAuth(pyatmo.AbstractAsyncAuth):
         """Return the number of API calls made in the last hour."""
         self._prune(monotonic())
         return len(self._call_times)
+
+
+class NetatmoTokenAuth(NetatmoEnergyAuth):
+    """Auth for a fresh token that has no config entry yet.
+
+    Used by the config flow to test the account before the entry exists
+    (quality scale ``test-before-configure``). Calls are counted like any
+    other, so the same request patches apply in tests.
+    """
+
+    def __init__(self, websession: ClientSession, access_token: str) -> None:
+        """Initialize with a bare access token."""
+        pyatmo.AbstractAsyncAuth.__init__(self, websession)
+        self._access_token = access_token
+        self._call_times = deque()
+
+    @override
+    async def async_get_access_token(self) -> str:
+        """Return the token from the OAuth callback."""
+        return self._access_token

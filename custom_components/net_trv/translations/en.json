@@ -26,7 +26,9 @@
       "oauth_unauthorized": "OAuth authorization error while obtaining access token.",
       "user_rejected_authorize": "Account linking rejected.",
       "reauth_successful": "Re-authentication was successful",
-      "reconfigure_successful": "Re-configuration was successful"
+      "reconfigure_successful": "Re-configuration was successful",
+      "cannot_connect": "Failed to connect to Netatmo. Try again later.",
+      "no_energy_home": "No Netatmo home with a thermostat relay was found on this account."
     },
     "create_entry": {
       "default": "Successfully authenticated"

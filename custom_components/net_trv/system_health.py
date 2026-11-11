@@ -1,18 +1,19 @@
 """System health for NET-TRV: Netatmo reachability, API budget, webhook."""
-# VERSION = "0.9.2"
+# VERSION = "0.10.0"
 
 from __future__ import annotations
 
 from typing import Any
 
 from homeassistant.components import system_health
-from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant, callback
 
 from .const import DOMAIN, RATE_LIMIT_PER_HOUR
 from .entity import valves_in
 
 NETATMO_API = "https://api.netatmo.com"
+# Where the user manages the Netatmo app (client id, webhook URL).
+NETATMO_APPS_URL = "https://dev.netatmo.com/apps"
 
 
 @callback
@@ -20,7 +21,7 @@ def async_register(
     hass: HomeAssistant, register: system_health.SystemHealthRegistration
 ) -> None:
     """Register system health callbacks."""
-    register.async_register_info(system_health_info)
+    register.async_register_info(system_health_info, NETATMO_APPS_URL)
 
 
 async def system_health_info(hass: HomeAssistant) -> dict[str, Any]:
@@ -28,11 +29,8 @@ async def system_health_info(hass: HomeAssistant) -> dict[str, Any]:
     info: dict[str, Any] = {
         "can_reach_server": system_health.async_check_can_reach_url(hass, NETATMO_API)
     }
-    entries = [
-        entry
-        for entry in hass.config_entries.async_entries(DOMAIN)
-        if entry.state is ConfigEntryState.LOADED
-    ]
+    # Only loaded entries are guaranteed to carry runtime_data.
+    entries = hass.config_entries.async_loaded_entries(DOMAIN)
     if not entries:
         return info
 

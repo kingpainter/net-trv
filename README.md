@@ -8,7 +8,7 @@
 [![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Validate](https://github.com/kingpainter/net-trv/actions/workflows/validate.yml/badge.svg)](https://github.com/kingpainter/net-trv/actions/workflows/validate.yml)
 [![Lint and tests](https://github.com/kingpainter/net-trv/actions/workflows/tests.yml/badge.svg)](https://github.com/kingpainter/net-trv/actions/workflows/tests.yml)
-[![Quality scale](https://img.shields.io/badge/quality%20scale-platinum%20(target)-E5E4E2)](quality_scale.yaml)
+[![Quality scale](https://img.shields.io/badge/quality%20scale-silver-C0C0C0)](quality_scale.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 NET-TRV is a Home Assistant custom integration for the Netatmo thermostat
@@ -35,11 +35,11 @@ real-time updates through Netatmo's webhook.
   so it does not share rate limits or the webhook with the core `netatmo`
   integration. Typical use: about 15 API calls per hour of the 500 allowed.
 
-## Features (0.9.2)
+## Features (0.10.0)
 
 | Feature | Status |
 | --- | --- |
-| OAuth2 config flow with reauth and reconfigure | ✅ |
+| OAuth2 config flow with reauth and reconfigure; checks the account for a relay before setup | ✅ |
 | Climate per room (auto / heat / off, presets) | ✅ |
 | Real-time state from webhook events (temperature, demand, setpoint, home mode, schedule) | ✅ |
 | Valve and relay diagnostics (battery, signal, firmware, connection, valve position) | ✅ |
@@ -193,7 +193,9 @@ Developer tools → Statistics.
 
 ## Troubleshooting
 
-Settings → System → Repairs → ⋮ → **System information** → NET-TRV shows whether Netatmo is reachable, API calls in the last hour, webhook state and valves online.
+Settings → System → Repairs → ⋮ → **System information** → NET-TRV shows whether Netatmo is reachable, API calls in the last hour, webhook state and valves online. Its link opens your apps on dev.netatmo.com, where the webhook URL is set.
+
+Setup stops with **"Failed to connect to Netatmo"** when the account cannot be read right after sign-in (try again later), or with **"No Netatmo home with a thermostat relay"** when the account has no relay (NAPlug). Nothing is created in either case.
 
 Download diagnostics from the integration page: it shows the webhook state,
 API calls in the last hour, room history and weather status, and the last 50
