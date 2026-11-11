@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from ipaddress import ip_address
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -10,6 +11,7 @@ from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers import config_entry_oauth2_flow
+from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 from pyatmo.exceptions import ApiError
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -239,3 +241,50 @@ async def test_reauth(
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reauth_successful"
     assert config_entry.data["token"]["access_token"] == "re-access"
+
+
+RELAY_HOMEKIT = ZeroconfServiceInfo(
+    ip_address=ip_address("192.168.0.50"),
+    ip_addresses=[ip_address("192.168.0.50")],
+    hostname="Netatmo-Relay-g12345.local.",
+    name="Netatmo Relay g12345._hap._tcp.local.",
+    port=5001,
+    type="_hap._tcp.local.",
+    properties={"md": "Netatmo Relay", "id": "AA:BB:CC:DD:EE:FF", "sf": "1"},
+)
+
+
+@pytest.mark.usefixtures("credentials", "current_request_with_host", "mock_api")
+async def test_homekit_discovery(
+    hass: HomeAssistant, hass_client_no_auth: Any, aioclient_mock: Any
+) -> None:
+    """The relay found over HomeKit leads to a confirm step, then OAuth."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={"source": config_entries.SOURCE_HOMEKIT},
+        data=RELAY_HOMEKIT,
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "homekit_confirm"
+
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    assert result["type"] is FlowResultType.EXTERNAL_STEP
+    result = await _finish_oauth(
+        hass, hass_client_no_auth, aioclient_mock, result["flow_id"]
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+
+
+@pytest.mark.usefixtures("credentials")
+async def test_homekit_discovery_when_configured(
+    hass: HomeAssistant, config_entry: MockConfigEntry
+) -> None:
+    """Discovery is silent once NET-TRV is set up."""
+    config_entry.add_to_hass(hass)
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN,
+        context={"source": config_entries.SOURCE_HOMEKIT},
+        data=RELAY_HOMEKIT,
+    )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "single_instance_allowed"

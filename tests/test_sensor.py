@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, patch
 
 from homeassistant.const import STATE_OFF, STATE_ON, STATE_UNAVAILABLE
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -34,6 +35,7 @@ def _patched_fixtures(edit: Any) -> Any:
     return patch.object(conftest, "load_fixture", _load)
 
 
+@pytest.mark.usefixtures("entity_registry_enabled_by_default")
 async def test_valve_and_relay_sensors(
     hass: HomeAssistant, config_entry: MockConfigEntry, mock_api: AsyncMock
 ) -> None:
@@ -55,6 +57,7 @@ async def test_valve_and_relay_sensors(
     assert online.attributes["offline"] == []
 
 
+@pytest.mark.usefixtures("entity_registry_enabled_by_default")
 async def test_unreachable_valve(
     hass: HomeAssistant, config_entry: MockConfigEntry, mock_api: AsyncMock
 ) -> None:
@@ -116,3 +119,24 @@ async def test_room_with_two_valves_names_each_valve(
     assert hass.states.get("sensor.stuen_battery_state_valve_stuen").state == "full"
     assert hass.states.get("sensor.stuen_battery_state_valve_stuen_2").state == "low"
     assert hass.states.get("climate.stuen") is not None
+
+
+async def test_diagnostic_noise_disabled_by_default(
+    hass: HomeAssistant, config_entry: MockConfigEntry, mock_api: AsyncMock
+) -> None:
+    """Signal, firmware and valve position start disabled (quality scale)."""
+    await _setup(hass, config_entry)
+    registry = er.async_get(hass)
+    for entity_id in (
+        "sensor.stuen_radio_signal",
+        "sensor.gang_relay_wi_fi_signal",
+        "sensor.stuen_firmware",
+        "sensor.stuen_valve_position",
+        "sensor.gang_relay_firmware",
+    ):
+        entry = registry.async_get(entity_id)
+        assert entry is not None, entity_id
+        assert entry.disabled_by is er.RegistryEntryDisabler.INTEGRATION
+        assert hass.states.get(entity_id) is None
+    # Battery stays enabled: it is what users act on.
+    assert hass.states.get("sensor.stuen_battery") is not None

@@ -143,6 +143,7 @@ def test_valve_position_parsing() -> None:
 # --- end to end through the webhook -------------------------------------------
 
 
+@pytest.mark.usefixtures("entity_registry_enabled_by_default")
 async def test_events_update_entities_without_polling(
     hass: HomeAssistant,
     config_entry: MockConfigEntry,

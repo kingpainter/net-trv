@@ -35,11 +35,44 @@ real-time updates through Netatmo's webhook.
   so it does not share rate limits or the webhook with the core `netatmo`
   integration. Typical use: about 15 API calls per hour of the 500 allowed.
 
-## Features (0.10.0)
+## Supported devices
+
+| Device | Netatmo type | Supported |
+| --- | --- | --- |
+| Thermostat relay (the bridge in the room) | NAPlug | ✅ as the hub device |
+| Smart radiator valve | NRV | ✅ one device per room |
+| Smart thermostat | NATherm1 | ❌ not tested; no hardware to test against |
+| OpenTherm thermostat, boiler data | OTM / BNS | ❌ (`setstate`, `getmeasure`) |
+| Weather station, cameras, smoke alarms, other Netatmo devices | — | ❌ use the core `netatmo` integration |
+
+The relay is found automatically on the network (HomeKit announcement
+"Netatmo Relay"); Home Assistant then offers NET-TRV under **Discovered**.
+The relay's own HomeKit pairing (HomeKit Device integration) is still
+offered, and both can be used side by side.
+
+## Use cases
+
+- **District heating or any home without a boiler signal.** `hvac_action`
+  comes from the valves' heating demand, so a room shows *heating* when its
+  valve opens, not when a boiler fires.
+- **Replace the core `netatmo` integration for heating.** Same action names
+  and climate behaviour, but real-time through the webhook, on your own
+  Netatmo app and rate limit.
+- **Heating automations that react in seconds**, e.g. pause heating when a
+  window opens or boost a room on a button press.
+- **Follow the house over time**: room temperature and setpoint history in
+  long-term statistics, including the 30 days before installation.
+- **Edit heating schedules from Home Assistant**: zone temperatures,
+  away / frost guard temperatures, copies of schedules for the season.
+- **Local outdoor weather without a station**: the median of public Netatmo
+  stations around your home.
+
+## Features (0.11.0)
 
 | Feature | Status |
 | --- | --- |
 | OAuth2 config flow with reauth and reconfigure; checks the account for a relay before setup | ✅ |
+| Discovery of the relay on the network (HomeKit announcement) | ✅ |
 | Climate per room (auto / heat / off, presets) | ✅ |
 | Real-time state from webhook events (temperature, demand, setpoint, home mode, schedule) | ✅ |
 | Valve and relay diagnostics (battery, signal, firmware, connection, valve position) | ✅ |
@@ -98,17 +131,21 @@ Settings → Devices & services → NET-TRV → **Configure**:
 | --- | --- |
 | `climate.<room>` | Room thermostat. Attributes: `heating_power_request`, `open_window`, `anticipating`, `netatmo_setpoint_mode`, `setpoint_end_time`. |
 | `sensor.<room>_battery` / `_battery_state` | Valve battery (% is approximate, derived from Netatmo's state). |
-| `sensor.<room>_radio_signal` | Valve radio signal to the relay, dBm. |
-| `sensor.<room>_firmware` | Valve firmware revision. |
-| `sensor.<room>_valve_position` | Raw valve motor position from the webhook (lower = more open, observed ~1470–2450; scale undocumented). Attribute `motor_cmd`. |
+| `sensor.<room>_radio_signal` | Valve radio signal to the relay, dBm. Disabled by default. |
+| `sensor.<room>_firmware` | Valve firmware revision. Disabled by default. |
+| `sensor.<room>_valve_position` | Disabled by default. Raw valve motor position from the webhook (lower = more open, observed ~1470–2450; scale undocumented). Attribute `motor_cmd`. |
 | `binary_sensor.<room>_connectivity` | Valve reachable by the relay. |
 | `select.<relay>_heating_schedule` | Active Netatmo heating schedule (e.g. Sommer / Vinter); selecting one switches the whole home. |
 | `number.<relay>_away_temperature` / `_frost_guard_temperature` | Away and frost guard temperatures of the active schedule. |
-| `sensor.<relay>_wi_fi_signal` / `_firmware` | Relay Wi-Fi signal (dBm) and firmware. |
+| `sensor.<relay>_wi_fi_signal` / `_firmware` | Relay Wi-Fi signal (dBm) and firmware. Disabled by default. |
 | `sensor.<relay>_valves_online` | Reachable valves; attributes `total` and `offline`. |
 | `binary_sensor.<relay>_connectivity` | Relay reachable by Netatmo. |
 | `binary_sensor.<relay>_webhook` | Webhook registered with Netatmo; attributes `events_received`, `events_applied`, `events_ignored`, `last_event`, `rejected_signatures`, `last_error`. |
 | `sensor.public_weather_*` | Temperature, humidity, pressure, precipitation (now, last hour, last 24 h), wind speed, gusts, wind direction, stations in area. |
+
+Entities marked *disabled by default* are diagnostic and rarely needed;
+enable them under the device's entity list. Entities already enabled on an
+existing installation stay enabled.
 
 ### Actions
 
@@ -179,6 +216,85 @@ NET-TRV registers the webhook through the API once Home Assistant has started
 and keeps an existing registration. Netatmo allows one webhook per app, so
 use a dedicated Netatmo app for this integration. Every event is checked
 against the HMAC signature Netatmo sends; unsigned or wrong calls get 401.
+
+## How data is updated
+
+| Source | When | What |
+| --- | --- | --- |
+| Webhook (push) | Within about a second of a change | Room temperature, heating demand, setpoint, home mode, schedule, valve position |
+| Status poll (`/homestatus`) | Every 5 min while webhook events arrive (one in the last 15 min), otherwise every 60 s | All room and module state; reconciles anything the webhook missed |
+| Topology (`/homesdata`) | Every 3 hours, and after webhook events that change the home setup | Homes, rooms, modules, schedules, away / frost guard temperatures |
+| After a change from Home Assistant | 5 s later | One status poll to confirm what Netatmo applied |
+| Room history (`getroommeasure`) | Every hour | Hourly temperature and setpoint into long-term statistics |
+| Public weather (`getpublicdata`) | Every 10 minutes | Nearby public stations |
+
+When Netatmo rate-limits the account, polling backs off to every 5 minutes
+until a call succeeds again. Webhook setpoint messages carry no timestamp, so
+NET-TRV confirms them with a status poll 5 s later. Without a public HTTPS
+URL there is no webhook, and the integration runs on polling only.
+
+## Examples
+
+Warn when a window is opened while the room is heating:
+
+```yaml
+automation:
+  - alias: "Window open in the living room"
+    triggers:
+      - trigger: state
+        entity_id: climate.living_room
+        attribute: open_window
+        to: true
+    actions:
+      - action: notify.mobile_app_phone
+        data:
+          title: "🪟 Window open"
+          message: "Netatmo paused the living room valve."
+```
+
+Boost the bathroom for an hour from a button:
+
+```yaml
+automation:
+  - alias: "Bathroom boost"
+    triggers:
+      - trigger: state
+        entity_id: input_button.bathroom_boost
+    actions:
+      - action: net_trv.set_preset_mode_with_end_datetime
+        target:
+          entity_id: climate.bathroom
+        data:
+          preset_mode: boost
+          end_datetime: "{{ (now() + timedelta(hours=1)).isoformat() }}"
+```
+
+Away mode for the whole home until you are back:
+
+```yaml
+action: net_trv.set_preset_mode_with_end_datetime
+target:
+  entity_id: climate.living_room
+data:
+  preset_mode: away
+  end_datetime: "2026-12-27 15:00:00"
+```
+
+Switch to the winter schedule on the first of October:
+
+```yaml
+automation:
+  - alias: "Winter heating schedule"
+    triggers:
+      - trigger: template
+        value_template: "{{ now().month == 10 and now().day == 1 }}"
+    actions:
+      - action: select.select_option
+        target:
+          entity_id: select.gang_relay_heating_schedule
+        data:
+          option: Vinter
+```
 
 ## Removal
 

@@ -3,7 +3,7 @@
 Registered once in ``async_setup`` (quality scale: action-setup). Room actions
 target our climate entities; webhook actions act on the single config entry.
 """
-# VERSION = "0.10.0"
+# VERSION = "0.11.0"
 
 from __future__ import annotations
 

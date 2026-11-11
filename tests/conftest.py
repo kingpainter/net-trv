@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 import time
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 from homeassistant.components.application_credentials import (
     ClientCredential,
@@ -126,3 +126,14 @@ def mock_api() -> Generator[AsyncMock]:
         ),
     ):
         yield mock_post
+
+
+@pytest.fixture
+def entity_registry_enabled_by_default() -> Generator[None]:
+    """Enable entities that are disabled by default (as in HA core's tests)."""
+    with patch(
+        "homeassistant.helpers.entity.Entity.entity_registry_enabled_default",
+        new_callable=PropertyMock,
+        return_value=True,
+    ):
+        yield

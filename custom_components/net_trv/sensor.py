@@ -1,5 +1,5 @@
 """Diagnostic sensors for NET-TRV valves (on room devices) and the relay."""
-# VERSION = "0.10.0"
+# VERSION = "0.11.0"
 
 from __future__ import annotations
 
@@ -110,6 +110,8 @@ VALVE_SENSORS: tuple[NetatmoModuleSensorDescription, ...] = (
     NetatmoModuleSensorDescription(
         key="rf_strength",
         translation_key="rf_strength",
+        # Noise for most users; enable when debugging radio problems.
+        entity_registry_enabled_default=False,
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -119,6 +121,7 @@ VALVE_SENSORS: tuple[NetatmoModuleSensorDescription, ...] = (
     NetatmoModuleSensorDescription(
         key="firmware",
         translation_key="firmware",
+        entity_registry_enabled_default=False,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_firmware,
         sticky=True,
@@ -130,6 +133,8 @@ VALVE_SENSORS: tuple[NetatmoModuleSensorDescription, ...] = (
 VALVE_POSITION = SensorEntityDescription(
     key="valve_position",
     translation_key="valve_position",
+    # Raw motor value, mainly useful for diagnosis.
+    entity_registry_enabled_default=False,
     state_class=SensorStateClass.MEASUREMENT,
     entity_category=EntityCategory.DIAGNOSTIC,
 )
@@ -138,6 +143,8 @@ RELAY_SENSORS: tuple[NetatmoModuleSensorDescription, ...] = (
     NetatmoModuleSensorDescription(
         key="wifi_strength",
         translation_key="wifi_strength",
+        # Noise for most users; enable when debugging radio problems.
+        entity_registry_enabled_default=False,
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -147,6 +154,7 @@ RELAY_SENSORS: tuple[NetatmoModuleSensorDescription, ...] = (
     NetatmoModuleSensorDescription(
         key="firmware",
         translation_key="firmware",
+        entity_registry_enabled_default=False,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_firmware,
         sticky=True,

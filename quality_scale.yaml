@@ -1,6 +1,6 @@
 # Integration Quality Scale status for net_trv.
 # Rules: https://contributors.home-assistant.io/core/quality-scale/
-# Reached: Silver (0.10.0). Target: Platinum (Gold in 0.11.0).
+# Reached: Silver (0.10.0). Gold step A in 0.11.0; dynamic-devices and repair-issues remain.
 # Values: done | todo | exempt (with comment).
 rules:
   # Bronze
@@ -53,42 +53,27 @@ rules:
   devices: done
   diagnostics: done
   discovery:
-    status: todo
-    comment: >-
-      The relay announces itself over HomeKit (model "Netatmo Relay"). Check
-      first whether a manifest match takes unpaired relays away from HomeKit
-      Device (local fallback); if so, mark exempt with that reason (0.11.0).
+    status: done
+    comment: HomeKit model "Netatmo Relay"; HomeKit Device keeps being offered the unpaired relay (always_discover for cloud integrations).
   discovery-update-info:
     status: exempt
     comment: Cloud API only; the device IP address is never used.
-  docs-data-update:
-    status: todo
-    comment: Webhook and polling are described, but not in one dedicated section (0.11.0).
-  docs-examples:
-    status: todo
-    comment: Automation examples missing (0.11.0).
+  docs-data-update: done
+  docs-examples: done
   docs-known-limitations: done
-  docs-supported-devices:
-    status: todo
-    comment: List NAPlug + NRV and unsupported devices explicitly (0.11.0).
+  docs-supported-devices: done
   docs-supported-functions: done
   docs-troubleshooting: done
-  docs-use-cases:
-    status: todo
-    comment: Use cases missing (0.11.0).
+  docs-use-cases: done
   dynamic-devices:
     status: todo
     comment: New rooms or valves need a reload (0.11.0).
   entity-category: done
   entity-device-class: done
-  entity-disabled-by-default:
-    status: todo
-    comment: Signal, firmware and valve position should be disabled by default (0.11.0).
+  entity-disabled-by-default: done
   entity-translations: done
   exception-translations: done
-  icon-translations:
-    status: todo
-    comment: icons.json missing (0.11.0).
+  icon-translations: done
   reconfiguration-flow: done
   repair-issues:
     status: todo

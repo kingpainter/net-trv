@@ -4,6 +4,29 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.11.0] - 2026-11-11
+
+Gold, step A. Dynamic devices, repair issues and the account unique id
+follow in step B.
+
+### Added
+- Discovery: the relay's HomeKit announcement ("Netatmo Relay") offers
+  NET-TRV under Discovered, with a confirm step before Netatmo sign-in.
+  HomeKit Device is still offered the unpaired relay (cloud integrations do
+  not take HomeKit discovery away).
+- `icons.json`: icons for battery state, firmware, valve position, valves
+  online, weather stations, schedule select, away / frost guard numbers,
+  webhook, climate presets and all ten actions.
+
+### Changed
+- Valve radio signal, relay Wi-Fi signal, firmware (valve and relay) and
+  valve position are disabled by default on new installations. Existing
+  entities keep their state.
+
+### Docs
+- README: supported devices, use cases, how data is updated, automation
+  examples.
+
 ## [0.10.0] - 2026-11-11
 
 Quality scale: Silver.

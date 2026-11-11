@@ -11,6 +11,10 @@
       "reconfigure": {
         "title": "Sign in to Netatmo again",
         "description": "Signs in to Netatmo again without removing NET-TRV. Use this after setting or changing the webhook URL on your Netatmo app: Netatmo only links the webhook to your account when you sign in."
+      },
+      "homekit_confirm": {
+        "title": "Netatmo relay found",
+        "description": "A Netatmo relay was found on your network. Set up NET-TRV and sign in to the Netatmo account it belongs to?"
       }
     },
     "abort": {

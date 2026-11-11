@@ -11,7 +11,7 @@ Valves are not separate devices: with one valve per room the room *is* the
 valve for the user, and separate devices would leave rooms or valves without
 entities.
 """
-# VERSION = "0.10.0"
+# VERSION = "0.11.0"
 
 from __future__ import annotations
 

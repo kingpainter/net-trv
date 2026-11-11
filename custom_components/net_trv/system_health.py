@@ -1,5 +1,5 @@
 """System health for NET-TRV: Netatmo reachability, API budget, webhook."""
-# VERSION = "0.10.0"
+# VERSION = "0.11.0"
 
 from __future__ import annotations
 

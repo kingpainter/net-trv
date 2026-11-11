@@ -11,6 +11,10 @@
       "reconfigure": {
         "title": "Log ind hos Netatmo igen",
         "description": "Logger ind hos Netatmo igen uden at fjerne NET-TRV. Brug det, efter du har sat eller ændret webhook-URL'en på din Netatmo-app: Netatmo knytter kun webhooken til din konto, når du logger ind."
+      },
+      "homekit_confirm": {
+        "title": "Netatmo-relæ fundet",
+        "description": "Der er fundet et Netatmo-relæ på dit netværk. Vil du sætte NET-TRV op og logge ind på den Netatmo-konto, relæet hører til?"
       }
     },
     "abort": {

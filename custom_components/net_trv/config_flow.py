@@ -1,5 +1,5 @@
 """Config flow for NET-TRV (OAuth2 against the user's own Netatmo app)."""
-# VERSION = "0.10.0"
+# VERSION = "0.11.0"
 
 from __future__ import annotations
 
@@ -19,6 +19,7 @@ from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE, CONF_RADIUS
 from homeassistant.core import callback
 from homeassistant.helpers import config_entry_oauth2_flow, selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 import probatio as vol
 import pyatmo
 from pyatmo.exceptions import ApiError, NoDeviceError
@@ -64,6 +65,27 @@ class NetatmoEnergyFlowHandler(
     def extra_authorize_data(self) -> dict[str, Any]:
         """Request only the thermostat scopes."""
         return {"scope": " ".join(API_SCOPES)}
+
+    async def async_step_homekit(
+        self, discovery_info: ZeroconfServiceInfo
+    ) -> ConfigFlowResult:
+        """Handle the relay found over HomeKit.
+
+        The relay only tells us that a Netatmo relay is on the network; the
+        account behind it is chosen at sign-in. ``single_config_entry``
+        aborts this flow when NET-TRV is already set up. No unique id is set
+        here: the entry gets its id from the Netatmo account, not the relay.
+        """
+        return await self.async_step_homekit_confirm()
+
+    async def async_step_homekit_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Ask before sending the user to Netatmo."""
+        if user_input is None:
+            self._set_confirm_only()
+            return self.async_show_form(step_id="homekit_confirm")
+        return await self.async_step_user()
 
     async def async_step_reauth(
         self, entry_data: Mapping[str, Any]

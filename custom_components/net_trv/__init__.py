@@ -1,5 +1,5 @@
 """The NET-TRV integration: Netatmo relay (NAPlug) and valves (NRV)."""
-# VERSION = "0.10.0"
+# VERSION = "0.11.0"
 
 from __future__ import annotations
 

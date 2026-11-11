@@ -1,0 +1,111 @@
+{
+  "entity": {
+    "climate": {
+      "room": {
+        "state_attributes": {
+          "preset_mode": {
+            "default": "mdi:calendar-clock",
+            "state": {
+              "schedule": "mdi:calendar-clock",
+              "away": "mdi:home-export-outline",
+              "frost_guard": "mdi:snowflake-thermometer",
+              "boost": "mdi:fire"
+            }
+          }
+        }
+      }
+    },
+    "sensor": {
+      "battery_state": {
+        "default": "mdi:battery",
+        "state": {
+          "max": "mdi:battery",
+          "full": "mdi:battery",
+          "high": "mdi:battery-70",
+          "medium": "mdi:battery-50",
+          "low": "mdi:battery-20",
+          "very_low": "mdi:battery-alert-variant-outline"
+        }
+      },
+      "battery_state_multi": {
+        "default": "mdi:battery",
+        "state": {
+          "max": "mdi:battery",
+          "full": "mdi:battery",
+          "high": "mdi:battery-70",
+          "medium": "mdi:battery-50",
+          "low": "mdi:battery-20",
+          "very_low": "mdi:battery-alert-variant-outline"
+        }
+      },
+      "firmware": {
+        "default": "mdi:chip"
+      },
+      "firmware_multi": {
+        "default": "mdi:chip"
+      },
+      "valve_position": {
+        "default": "mdi:valve"
+      },
+      "valve_position_multi": {
+        "default": "mdi:valve"
+      },
+      "valves_online": {
+        "default": "mdi:radiator"
+      },
+      "weather_stations": {
+        "default": "mdi:weather-partly-cloudy"
+      }
+    },
+    "binary_sensor": {
+      "webhook": {
+        "default": "mdi:webhook"
+      }
+    },
+    "select": {
+      "schedule": {
+        "default": "mdi:calendar-clock"
+      }
+    },
+    "number": {
+      "away_temp": {
+        "default": "mdi:home-export-outline"
+      },
+      "frost_guard_temp": {
+        "default": "mdi:snowflake-thermometer"
+      }
+    }
+  },
+  "services": {
+    "set_schedule": {
+      "service": "mdi:calendar-check"
+    },
+    "set_preset_mode_with_end_datetime": {
+      "service": "mdi:timer-cog-outline"
+    },
+    "set_temperature_with_end_datetime": {
+      "service": "mdi:thermometer-chevron-up"
+    },
+    "set_temperature_with_time_period": {
+      "service": "mdi:thermometer-lines"
+    },
+    "clear_temperature_setting": {
+      "service": "mdi:thermometer-off"
+    },
+    "register_webhook": {
+      "service": "mdi:webhook"
+    },
+    "unregister_webhook": {
+      "service": "mdi:link-variant-off"
+    },
+    "set_schedule_temperature": {
+      "service": "mdi:calendar-edit"
+    },
+    "rename_schedule": {
+      "service": "mdi:rename-outline"
+    },
+    "create_schedule": {
+      "service": "mdi:calendar-plus"
+    }
+  }
+}
