@@ -25,10 +25,10 @@
   "loggers": [
     "pyatmo"
   ],
-  "quality_scale": "silver",
+  "quality_scale": "gold",
   "requirements": [
     "pyatmo>=9.9.0"
   ],
   "single_config_entry": true,
-  "version": "0.11.0"
+  "version": "0.11.1"
 }

@@ -32,7 +32,8 @@
       "reauth_successful": "Re-authentication was successful",
       "reconfigure_successful": "Re-configuration was successful",
       "cannot_connect": "Failed to connect to Netatmo. Try again later.",
-      "no_energy_home": "No Netatmo home with a thermostat relay was found on this account."
+      "no_energy_home": "No Netatmo home with a thermostat relay was found on this account.",
+      "wrong_account": "This Netatmo account does not have the home NET-TRV was set up with. Sign in with the same account."
     },
     "create_entry": {
       "default": "Successfully authenticated"
@@ -334,6 +335,16 @@
       "valves_online": "Valves online",
       "room_history": "Room history",
       "public_weather": "Public weather"
+    }
+  },
+  "issues": {
+    "webhook_no_public_url": {
+      "title": "NET-TRV has no public webhook URL",
+      "description": "Netatmo can only send real-time events to a public HTTPS URL. Home Assistant has neither Home Assistant Cloud (Nabu Casa) nor an external HTTPS URL, so NET-TRV runs on polling only (changes show up within about a minute).\n\nSet up Home Assistant Cloud or an external URL under Settings → System → Network, then reload NET-TRV."
+    },
+    "webhook_registration_failed": {
+      "title": "NET-TRV webhook could not be registered",
+      "description": "Netatmo did not accept the webhook: {error}\n\nNET-TRV runs on polling until this is fixed. Check that the webhook URL is set on your Netatmo app at dev.netatmo.com, then use Reconfigure on NET-TRV to sign in again, or run the action `net_trv.register_webhook`."
     }
   }
 }

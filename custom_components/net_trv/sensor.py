@@ -1,5 +1,5 @@
 """Diagnostic sensors for NET-TRV valves (on room devices) and the relay."""
-# VERSION = "0.11.0"
+# VERSION = "0.11.1"
 
 from __future__ import annotations
 
@@ -34,6 +34,7 @@ from .coordinator import NetatmoEnergyConfigEntry, NetatmoEnergyCoordinator
 from .entity import (
     NetatmoEnergyRelayEntity,
     NetatmoEnergyValveEntity,
+    async_add_new_entities,
     relay_of,
     valves_in,
     weather_device_info,
@@ -246,33 +247,37 @@ async def async_setup_entry(
 ) -> None:
     """Create valve sensors on room devices and relay sensors on the relay."""
     coordinator = entry.runtime_data
-    entities: list[SensorEntity] = []
-    for home in coordinator.homes:
-        for room in home.rooms.values():
-            valves = valves_in(room)
-            entities.extend(
-                NetatmoValveSensor(coordinator, room, valve, len(valves) > 1, desc)
-                for valve in valves
-                for desc in VALVE_SENSORS
-            )
-            entities.extend(
-                NetatmoValvePositionSensor(
-                    coordinator, room, valve, len(valves) > 1, VALVE_POSITION
+
+    def build() -> list[SensorEntity]:
+        entities: list[SensorEntity] = []
+        for home in coordinator.homes:
+            for room in home.rooms.values():
+                valves = valves_in(room)
+                entities.extend(
+                    NetatmoValveSensor(coordinator, room, valve, len(valves) > 1, desc)
+                    for valve in valves
+                    for desc in VALVE_SENSORS
                 )
-                for valve in valves
-            )
-        if (relay := relay_of(home)) is not None:
+                entities.extend(
+                    NetatmoValvePositionSensor(
+                        coordinator, room, valve, len(valves) > 1, VALVE_POSITION
+                    )
+                    for valve in valves
+                )
+            if (relay := relay_of(home)) is not None:
+                entities.extend(
+                    NetatmoRelaySensor(coordinator, home, relay, desc)
+                    for desc in RELAY_SENSORS
+                )
+                entities.append(NetatmoValvesOnlineSensor(coordinator, home, relay))
+        if (weather := coordinator.weather) is not None:
             entities.extend(
-                NetatmoRelaySensor(coordinator, home, relay, desc)
-                for desc in RELAY_SENSORS
+                NetatmoPublicWeatherSensor(weather, desc) for desc in WEATHER_SENSORS
             )
-            entities.append(NetatmoValvesOnlineSensor(coordinator, home, relay))
-    if (weather := coordinator.weather) is not None:
-        entities.extend(
-            NetatmoPublicWeatherSensor(weather, desc) for desc in WEATHER_SENSORS
-        )
-        entities.append(NetatmoWeatherStationsSensor(weather, WEATHER_STATIONS))
-    async_add_entities(entities)
+            entities.append(NetatmoWeatherStationsSensor(weather, WEATHER_STATIONS))
+        return entities
+
+    async_add_new_entities(entry, coordinator, build, async_add_entities)
 
 
 class NetatmoValveSensor(NetatmoEnergyValveEntity, SensorEntity):

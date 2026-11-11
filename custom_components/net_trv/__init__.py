@@ -1,5 +1,5 @@
 """The NET-TRV integration: Netatmo relay (NAPlug) and valves (NRV)."""
-# VERSION = "0.11.0"
+# VERSION = "0.11.1"
 
 from __future__ import annotations
 
@@ -30,7 +30,11 @@ from .entity import (
 )
 from .services import async_setup_services
 from .weather import PublicWeatherCoordinator, weather_area
-from .webhook import async_remove_webhook, async_setup_webhook
+from .webhook import (
+    async_remove_webhook,
+    async_setup_webhook,
+    async_update_webhook_issue,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -75,6 +79,12 @@ async def async_setup_entry(
     coordinator.oauth_implementation = implementation
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
+    if entry.unique_id is None and coordinator.home_ids:
+        # Entries created before 0.11.0 get the same unique id a new setup
+        # would, so reauth can tell a different Netatmo account apart.
+        hass.config_entries.async_update_entry(
+            entry, unique_id=sorted(coordinator.home_ids)[0]
+        )
 
     # Public weather is optional and must never block heating: one attempt
     # now, failures only make the weather sensors unavailable.
@@ -115,8 +125,9 @@ async def async_unload_entry(
 async def async_remove_entry(
     hass: HomeAssistant, entry: NetatmoEnergyConfigEntry
 ) -> None:
-    """Clean up the Nabu Casa cloudhook when the integration is removed."""
+    """Clean up the Nabu Casa cloudhook and repair issues on removal."""
     await async_remove_webhook(hass, entry)
+    async_update_webhook_issue(hass, None)
 
 
 def _register_relays(

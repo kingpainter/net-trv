@@ -16,7 +16,7 @@ from a NAPlug + NRV home (2026-11-10):
 * ``display_change`` (the only source of setpoints) has no timestamp either;
   the coordinator confirms those against ``/homestatus`` instead.
 """
-# VERSION = "0.11.0"
+# VERSION = "0.11.1"
 
 from __future__ import annotations
 

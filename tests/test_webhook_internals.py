@@ -12,6 +12,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import homeassistant.components
 from homeassistant.const import CONF_WEBHOOK_ID
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.network import NoURLAvailableError
 from pyatmo.exceptions import ApiError
 import pytest
@@ -155,6 +156,18 @@ class TestRegistration:
         ):
             assert not await net_webhook.async_register_with_netatmo(hass, config_entry)
         assert coordinator.webhook.last_error.startswith("registration failed")
+        issue = ir.async_get(hass).async_get_issue(
+            DOMAIN, net_webhook.ISSUE_REGISTRATION
+        )
+        assert issue is not None
+        assert issue.translation_placeholders == {"error": "conflict"}
+
+        # A later successful registration clears the issue.
+        assert await net_webhook.async_register_with_netatmo(hass, config_entry)
+        assert (
+            ir.async_get(hass).async_get_issue(DOMAIN, net_webhook.ISSUE_REGISTRATION)
+            is None
+        )
 
     async def test_lookup_error_registers_anyway(
         self, hass: HomeAssistant, config_entry: MockConfigEntry
@@ -194,3 +207,26 @@ class TestRegistration:
         await hass.async_block_till_done()
         assert resp.status == status
         assert coordinator.webhook.events_received == 0
+
+
+@pytest.mark.usefixtures("credentials", "mock_api")
+@pytest.mark.parametrize("webhook_url", [None], indirect=True)
+async def test_no_public_url_raises_issue(
+    hass: HomeAssistant, config_entry: MockConfigEntry
+) -> None:
+    config_entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(config_entry.entry_id)
+    await hass.async_block_till_done()
+    assert not await net_webhook.async_register_with_netatmo(hass, config_entry)
+    registry = ir.async_get(hass)
+    assert registry.async_get_issue(DOMAIN, net_webhook.ISSUE_NO_URL) is not None
+
+    # Stopping the webhook on purpose is not a problem to repair.
+    with patch.object(config_entry.runtime_data.auth, "async_dropwebhook", AsyncMock()):
+        await net_webhook.async_unregister_with_netatmo(config_entry)
+    assert registry.async_get_issue(DOMAIN, net_webhook.ISSUE_NO_URL) is None
+
+    # Removing the integration leaves no issue behind.
+    net_webhook.async_update_webhook_issue(hass, net_webhook.ISSUE_NO_URL)
+    await hass.config_entries.async_remove(config_entry.entry_id)
+    assert registry.async_get_issue(DOMAIN, net_webhook.ISSUE_NO_URL) is None

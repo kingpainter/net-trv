@@ -288,3 +288,62 @@ async def test_homekit_discovery_when_configured(
     )
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "single_instance_allowed"
+
+
+@pytest.mark.usefixtures("credentials", "current_request_with_host", "mock_api")
+async def test_new_entry_gets_home_unique_id(
+    hass: HomeAssistant, hass_client_no_auth: Any, aioclient_mock: Any
+) -> None:
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await _finish_oauth(
+        hass, hass_client_no_auth, aioclient_mock, result["flow_id"]
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["result"].unique_id == "home1"
+
+
+@pytest.mark.usefixtures("credentials", "current_request_with_host", "mock_api")
+@pytest.mark.parametrize("source", ["reauth", "reconfigure"])
+async def test_other_account_is_refused(
+    hass: HomeAssistant,
+    hass_client_no_auth: Any,
+    aioclient_mock: Any,
+    config_entry: MockConfigEntry,
+    source: str,
+) -> None:
+    """Signing in with an account without the entry's home changes nothing."""
+    config_entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(config_entry, unique_id="other-home")
+    if source == "reauth":
+        result = await config_entry.start_reauth_flow(hass)
+    else:
+        result = await config_entry.start_reconfigure_flow(hass)
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    result = await _finish_oauth(
+        hass, hass_client_no_auth, aioclient_mock, result["flow_id"], "intruder"
+    )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "wrong_account"
+    assert config_entry.data["token"]["access_token"] == "access"
+    assert config_entry.unique_id == "other-home"
+
+
+@pytest.mark.usefixtures("credentials", "current_request_with_host", "mock_api")
+async def test_reauth_sets_missing_unique_id(
+    hass: HomeAssistant,
+    hass_client_no_auth: Any,
+    aioclient_mock: Any,
+    config_entry: MockConfigEntry,
+) -> None:
+    """An entry from before 0.11.0 takes the home id on reauth."""
+    config_entry.add_to_hass(hass)
+    assert config_entry.unique_id is None
+    result = await config_entry.start_reauth_flow(hass)
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    result = await _finish_oauth(
+        hass, hass_client_no_auth, aioclient_mock, result["flow_id"]
+    )
+    assert result["reason"] == "reauth_successful"
+    assert config_entry.unique_id == "home1"

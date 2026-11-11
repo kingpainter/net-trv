@@ -11,13 +11,17 @@ Valves are not separate devices: with one valve per room the room *is* the
 valve for the user, and separate devices would leave rooms or valves without
 entities.
 """
-# VERSION = "0.11.0"
+# VERSION = "0.11.1"
 
 from __future__ import annotations
 
+from collections.abc import Callable, Iterable
+
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
-from homeassistant.helpers.entity import EntityDescription
+from homeassistant.helpers.entity import Entity, EntityDescription
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from pyatmo.home import Home
 from pyatmo.modules.module import Module
@@ -25,6 +29,39 @@ from pyatmo.room import Room
 
 from .const import DOMAIN, GATEWAY_TYPES, MANUFACTURER, VALVE_TYPES
 from .coordinator import NetatmoEnergyCoordinator
+
+
+@callback
+def async_add_new_entities(
+    entry: ConfigEntry,
+    coordinator: NetatmoEnergyCoordinator,
+    build: Callable[[], Iterable[Entity]],
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
+    """Add the platform's entities now and again when the topology changes.
+
+    ``build`` returns every entity the current topology calls for; only the
+    ones with an unknown unique id are added. A room or valve added in the
+    Netatmo app therefore shows up after the next topology read (3 h, or
+    sooner after a webhook home event) without reloading NET-TRV.
+    """
+    known: set[str | None] = set()
+    seen_version = -1
+
+    @callback
+    def _add_new() -> None:
+        nonlocal seen_version
+        if coordinator.topology_version == seen_version:
+            return
+        seen_version = coordinator.topology_version
+        new = [entity for entity in build() if entity.unique_id not in known]
+        if new:
+            known.update(entity.unique_id for entity in new)
+            async_add_entities(new)
+
+    _add_new()
+    entry.async_on_unload(coordinator.async_add_listener(_add_new))
+
 
 MODEL_RELAY = "Thermostat relay"
 MODEL_VALVE = "Smart radiator valve"

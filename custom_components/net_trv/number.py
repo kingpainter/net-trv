@@ -1,5 +1,5 @@
 """Away and frost guard temperatures of the active heating schedule."""
-# VERSION = "0.11.0"
+# VERSION = "0.11.1"
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ from .coordinator import (
     NetatmoEnergyCoordinator,
     selected_therm_schedule,
 )
-from .entity import NetatmoEnergyRelayEntity, relay_of
+from .entity import NetatmoEnergyRelayEntity, async_add_new_entities, relay_of
 from .schedules import async_edit_schedule
 
 PARALLEL_UPDATES = 1
@@ -58,12 +58,16 @@ async def async_setup_entry(
 ) -> None:
     """Create the schedule temperature numbers on each relay."""
     coordinator = entry.runtime_data
-    async_add_entities(
-        NetatmoScheduleTemperature(coordinator, home, relay, desc)
-        for home in coordinator.homes
-        if (relay := relay_of(home)) is not None
-        for desc in SCHEDULE_TEMPS
-    )
+
+    def build() -> list[NetatmoScheduleTemperature]:
+        return [
+            NetatmoScheduleTemperature(coordinator, home, relay, desc)
+            for home in coordinator.homes
+            if (relay := relay_of(home)) is not None
+            for desc in SCHEDULE_TEMPS
+        ]
+
+    async_add_new_entities(entry, coordinator, build, async_add_entities)
 
 
 class NetatmoScheduleTemperature(NetatmoEnergyRelayEntity, NumberEntity):

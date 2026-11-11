@@ -32,7 +32,8 @@
       "reauth_successful": "Gengodkendelse lykkedes",
       "reconfigure_successful": "Genkonfigurationen lykkedes",
       "cannot_connect": "Kunne ikke forbinde til Netatmo. Prøv igen senere.",
-      "no_energy_home": "Der blev ikke fundet et Netatmo-hjem med termostatrelæ på kontoen."
+      "no_energy_home": "Der blev ikke fundet et Netatmo-hjem med termostatrelæ på kontoen.",
+      "wrong_account": "Denne Netatmo-konto har ikke det hjem, NET-TRV blev sat op med. Log ind med den samme konto."
     },
     "create_entry": {
       "default": "Godkendt"
@@ -334,6 +335,16 @@
       "valves_online": "Ventiler online",
       "room_history": "Rumhistorik",
       "public_weather": "Offentligt vejr"
+    }
+  },
+  "issues": {
+    "webhook_no_public_url": {
+      "title": "NET-TRV har ingen offentlig webhook-URL",
+      "description": "Netatmo kan kun sende hændelser i realtid til en offentlig HTTPS-URL. Home Assistant har hverken Home Assistant Cloud (Nabu Casa) eller en ekstern HTTPS-URL, så NET-TRV kører kun med polling (ændringer vises inden for ca. et minut).\n\nSæt Home Assistant Cloud eller en ekstern URL op under Indstillinger → System → Netværk, og genindlæs derefter NET-TRV."
+    },
+    "webhook_registration_failed": {
+      "title": "NET-TRV-webhooken kunne ikke registreres",
+      "description": "Netatmo afviste webhooken: {error}\n\nNET-TRV kører med polling, indtil det er løst. Tjek at webhook-URL'en står på din Netatmo-app på dev.netatmo.com, og brug derefter Genkonfigurer på NET-TRV for at logge ind igen, eller kør handlingen `net_trv.register_webhook`."
     }
   }
 }

@@ -8,7 +8,7 @@
 [![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Validate](https://github.com/kingpainter/net-trv/actions/workflows/validate.yml/badge.svg)](https://github.com/kingpainter/net-trv/actions/workflows/validate.yml)
 [![Lint and tests](https://github.com/kingpainter/net-trv/actions/workflows/tests.yml/badge.svg)](https://github.com/kingpainter/net-trv/actions/workflows/tests.yml)
-[![Quality scale](https://img.shields.io/badge/quality%20scale-silver-C0C0C0)](quality_scale.yaml)
+[![Quality scale](https://img.shields.io/badge/quality%20scale-gold-FFD700)](quality_scale.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 NET-TRV is a Home Assistant custom integration for the Netatmo thermostat
@@ -67,12 +67,14 @@ offered, and both can be used side by side.
 - **Local outdoor weather without a station**: the median of public Netatmo
   stations around your home.
 
-## Features (0.11.0)
+## Features (0.11.1)
 
 | Feature | Status |
 | --- | --- |
 | OAuth2 config flow with reauth and reconfigure; checks the account for a relay before setup | ✅ |
 | Discovery of the relay on the network (HomeKit announcement) | ✅ |
+| New rooms and valves added without a reload | ✅ |
+| Repair issues when the webhook cannot be registered | ✅ |
 | Climate per room (auto / heat / off, presets) | ✅ |
 | Real-time state from webhook events (temperature, demand, setpoint, home mode, schedule) | ✅ |
 | Valve and relay diagnostics (battery, signal, firmware, connection, valve position) | ✅ |
@@ -310,6 +312,10 @@ Developer tools → Statistics.
 ## Troubleshooting
 
 Settings → System → Repairs → ⋮ → **System information** → NET-TRV shows whether Netatmo is reachable, API calls in the last hour, webhook state and valves online. Its link opens your apps on dev.netatmo.com, where the webhook URL is set.
+
+**Settings → System → Repairs** shows an issue when the webhook has no public URL or Netatmo did not accept it; NET-TRV keeps running on polling meanwhile, and the issue disappears once the webhook is registered.
+
+Reauthenticate or Reconfigure stops with **"This Netatmo account does not have the home…"** when you sign in with a different Netatmo account than the one NET-TRV was set up with.
 
 Setup stops with **"Failed to connect to Netatmo"** when the account cannot be read right after sign-in (try again later), or with **"No Netatmo home with a thermostat relay"** when the account has no relay (NAPlug). Nothing is created in either case.
 

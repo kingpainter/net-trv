@@ -5,7 +5,7 @@ straight from its ``Home``/``Room``/``Module`` objects. Webhook events are
 merged into it as they arrive (phase 2); polling reconciles, at 300 s while
 the webhook is alive and 60 s when it has gone quiet.
 """
-# VERSION = "0.11.0"
+# VERSION = "0.11.1"
 
 from __future__ import annotations
 
@@ -148,6 +148,9 @@ class NetatmoEnergyCoordinator(DataUpdateCoordinator[None]):
         # Set by async_setup_entry; the webhook needs its client secret.
         self.oauth_implementation: object | None = None
         self._topology_at: float | None = None
+        # Bumped on every topology read; platforms compare it to add new
+        # rooms and valves without a reload (quality scale dynamic-devices).
+        self.topology_version = 0
         # Public weather has its own coordinator (set in __init__.py).
         self.weather: PublicWeatherCoordinator | None = None
         # Room history importer (set in __init__.py when the recorder runs).
@@ -205,6 +208,7 @@ class NetatmoEnergyCoordinator(DataUpdateCoordinator[None]):
             if is_energy_home(home)
         ]
         self._topology_at = monotonic()
+        self.topology_version += 1
 
     async def _async_guard(self, call: Awaitable[None]) -> None:
         """Translate pyatmo/aiohttp errors to coordinator semantics."""

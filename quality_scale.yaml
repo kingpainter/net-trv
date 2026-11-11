@@ -1,6 +1,6 @@
 # Integration Quality Scale status for net_trv.
 # Rules: https://contributors.home-assistant.io/core/quality-scale/
-# Reached: Silver (0.10.0). Gold step A in 0.11.0; dynamic-devices and repair-issues remain.
+# Reached: Gold (0.11.1). Platinum rules are met as well.
 # Values: done | todo | exempt (with comment).
 rules:
   # Bronze
@@ -65,9 +65,7 @@ rules:
   docs-supported-functions: done
   docs-troubleshooting: done
   docs-use-cases: done
-  dynamic-devices:
-    status: todo
-    comment: New rooms or valves need a reload (0.11.0).
+  dynamic-devices: done
   entity-category: done
   entity-device-class: done
   entity-disabled-by-default: done
@@ -75,9 +73,7 @@ rules:
   exception-translations: done
   icon-translations: done
   reconfiguration-flow: done
-  repair-issues:
-    status: todo
-    comment: e.g. issue when the webhook is not registered (0.11.0).
+  repair-issues: done
   stale-devices: done
 
   # Platinum

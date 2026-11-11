@@ -6,7 +6,7 @@ Every payload is verified
 suspends slow endpoints for up to 10 min), and kept in a short ring buffer for
 diagnostics, then merged into the model by the coordinator (phase 2).
 """
-# VERSION = "0.11.0"
+# VERSION = "0.11.1"
 
 from __future__ import annotations
 
@@ -22,6 +22,7 @@ from aiohttp import ClientError, web
 from homeassistant.components import webhook
 from homeassistant.const import CONF_WEBHOOK_ID
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.network import NoURLAvailableError
 from homeassistant.util import dt as dt_util
 from pyatmo.const import WEBHOOK_ENDPOINT
@@ -35,6 +36,34 @@ _LOGGER = logging.getLogger(__name__)
 SIGNATURE_HEADER = "X-Netatmo-secret"
 PUSH_ACTIVATION = "webhook_activation"
 PUSH_DELETION = "webhook_deletion"
+
+# Repair issues (quality scale repair-issues). Without a webhook NET-TRV still
+# works on polling, so these are warnings the user can act on, not errors.
+ISSUE_NO_URL = "webhook_no_public_url"
+ISSUE_REGISTRATION = "webhook_registration_failed"
+WEBHOOK_DOCS_URL = "https://github.com/kingpainter/net-trv#webhook"
+
+
+@callback
+def async_update_webhook_issue(
+    hass: HomeAssistant, issue_id: str | None, error: str | None = None
+) -> None:
+    """Show at most one webhook issue; ``None`` clears them all."""
+    for known in (ISSUE_NO_URL, ISSUE_REGISTRATION):
+        if known != issue_id:
+            ir.async_delete_issue(hass, DOMAIN, known)
+    if issue_id is None:
+        return
+    ir.async_create_issue(
+        hass,
+        DOMAIN,
+        issue_id,
+        is_fixable=False,
+        severity=ir.IssueSeverity.WARNING,
+        translation_key=issue_id,
+        translation_placeholders={"error": error} if error else None,
+        learn_more_url=WEBHOOK_DOCS_URL,
+    )
 
 
 def verify_signature(body: bytes, secret: str, signature: str | None) -> bool:
@@ -180,6 +209,7 @@ async def async_register_with_netatmo(
     if getattr(coordinator.oauth_implementation, "client_secret", None) is None:
         state.last_error = "client secret unavailable; webhook not registered"
         _LOGGER.warning("NET-TRV: %s", state.last_error)
+        async_update_webhook_issue(hass, ISSUE_REGISTRATION, state.last_error)
         coordinator.async_signal_webhook()
         return False
 
@@ -187,6 +217,7 @@ async def async_register_with_netatmo(
     if url is None:
         state.last_error = "no public HTTPS URL (Nabu Casa or external URL needed)"
         _LOGGER.warning("NET-TRV webhook not registered: %s", state.last_error)
+        async_update_webhook_issue(hass, ISSUE_NO_URL)
         coordinator.async_signal_webhook()
         return False
 
@@ -194,6 +225,7 @@ async def async_register_with_netatmo(
         state.registered = True
         state.last_error = None
         _LOGGER.debug("NET-TRV webhook already registered with Netatmo")
+        async_update_webhook_issue(hass, None)
         coordinator.async_signal_webhook()
         return True
 
@@ -202,12 +234,14 @@ async def async_register_with_netatmo(
     except (ApiError, TimeoutError) as err:
         state.last_error = f"registration failed: {err}"
         _LOGGER.warning("NET-TRV webhook %s", state.last_error)
+        async_update_webhook_issue(hass, ISSUE_REGISTRATION, str(err))
         coordinator.async_signal_webhook()
         return False
     state.registered = True
     state.deleted_by_netatmo = False
     state.last_error = None
     _LOGGER.info("NET-TRV webhook registered")
+    async_update_webhook_issue(hass, None)
     coordinator.async_signal_webhook()
     return True
 
@@ -222,6 +256,8 @@ async def async_unregister_with_netatmo(entry: NetatmoEnergyConfigEntry) -> None
     await coordinator.auth.async_dropwebhook()
     coordinator.webhook.registered = False
     coordinator.webhook.last_error = "unregistered by user"
+    # A deliberate stop is not something to repair.
+    async_update_webhook_issue(coordinator.hass, None)
     coordinator.async_signal_webhook()
 
 

@@ -1,5 +1,5 @@
 """Heating schedule selection on the relay device."""
-# VERSION = "0.11.0"
+# VERSION = "0.11.1"
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from .coordinator import (
     NetatmoEnergyCoordinator,
     selected_therm_schedule,
 )
-from .entity import NetatmoEnergyRelayEntity, relay_of
+from .entity import NetatmoEnergyRelayEntity, async_add_new_entities, relay_of
 
 PARALLEL_UPDATES = 1
 
@@ -66,11 +66,15 @@ async def async_setup_entry(
 ) -> None:
     """Create one schedule select per relay."""
     coordinator = entry.runtime_data
-    async_add_entities(
-        NetatmoScheduleSelect(coordinator, home, relay)
-        for home in coordinator.homes
-        if (relay := relay_of(home)) is not None and therm_schedules(home)
-    )
+
+    def build() -> list[NetatmoScheduleSelect]:
+        return [
+            NetatmoScheduleSelect(coordinator, home, relay)
+            for home in coordinator.homes
+            if (relay := relay_of(home)) is not None and therm_schedules(home)
+        ]
+
+    async_add_new_entities(entry, coordinator, build, async_add_entities)
 
 
 class NetatmoScheduleSelect(NetatmoEnergyRelayEntity, SelectEntity):

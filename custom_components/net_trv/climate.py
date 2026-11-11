@@ -1,5 +1,5 @@
 """Climate entities for NET-TRV: one per Netatmo room."""
-# VERSION = "0.11.0"
+# VERSION = "0.11.1"
 
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ from .const import (
     TEMP_STEP,
 )
 from .coordinator import NetatmoEnergyConfigEntry, NetatmoEnergyCoordinator
-from .entity import NetatmoEnergyRoomEntity, valves_in
+from .entity import NetatmoEnergyRoomEntity, async_add_new_entities, valves_in
 from .schedules import async_edit_schedule, set_zone_temperature
 from .select import async_switch_schedule
 
@@ -124,12 +124,16 @@ async def async_setup_entry(
 ) -> None:
     """Create one climate entity per room with at least one valve."""
     coordinator = entry.runtime_data
-    async_add_entities(
-        NetatmoEnergyClimate(coordinator, room)
-        for home in coordinator.homes
-        for room in home.rooms.values()
-        if valves_in(room)
-    )
+
+    def build() -> list[NetatmoEnergyClimate]:
+        return [
+            NetatmoEnergyClimate(coordinator, room)
+            for home in coordinator.homes
+            for room in home.rooms.values()
+            if valves_in(room)
+        ]
+
+    async_add_new_entities(entry, coordinator, build, async_add_entities)
 
 
 class NetatmoEnergyClimate(NetatmoEnergyRoomEntity, ClimateEntity):

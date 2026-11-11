@@ -4,6 +4,24 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.11.1] - 2026-11-11
+
+Quality scale: Gold (step B of 0.11.0).
+
+### Added
+- Dynamic devices: a room or valve added in the Netatmo app appears after
+  the next topology read (every 3 hours, or sooner after a webhook home
+  event) without reloading NET-TRV.
+- Repair issues: "no public webhook URL" and "webhook could not be
+  registered" (with Netatmo's error). They clear themselves once the webhook
+  is registered, and are not raised when the webhook is stopped on purpose.
+- Unique id per entry: the id of the Netatmo home with the relay. Existing
+  entries get it at startup. Reauth and Reconfigure with a Netatmo account
+  that does not have this home abort with `wrong_account` and change nothing.
+
+### Fixed
+- `icons.json`: state icons equal to the default removed (hassfest).
+
 ## [0.11.0] - 2026-11-11
 
 Gold, step A. Dynamic devices, repair issues and the account unique id

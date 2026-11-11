@@ -1,5 +1,5 @@
 """Connectivity binary sensors for NET-TRV valves and the relay."""
-# VERSION = "0.11.0"
+# VERSION = "0.11.1"
 
 from __future__ import annotations
 
@@ -20,6 +20,7 @@ from .coordinator import NetatmoEnergyConfigEntry, NetatmoEnergyCoordinator
 from .entity import (
     NetatmoEnergyRelayEntity,
     NetatmoEnergyValveEntity,
+    async_add_new_entities,
     relay_of,
     valves_in,
 )
@@ -40,20 +41,24 @@ async def async_setup_entry(
 ) -> None:
     """Create a connectivity sensor per valve and one for the relay."""
     coordinator = entry.runtime_data
-    entities: list[BinarySensorEntity] = []
-    for home in coordinator.homes:
-        for room in home.rooms.values():
-            valves = valves_in(room)
-            entities.extend(
-                NetatmoValveConnectivity(
-                    coordinator, room, valve, len(valves) > 1, CONNECTIVITY
+
+    def build() -> list[BinarySensorEntity]:
+        entities: list[BinarySensorEntity] = []
+        for home in coordinator.homes:
+            for room in home.rooms.values():
+                valves = valves_in(room)
+                entities.extend(
+                    NetatmoValveConnectivity(
+                        coordinator, room, valve, len(valves) > 1, CONNECTIVITY
+                    )
+                    for valve in valves
                 )
-                for valve in valves
-            )
-        if (relay := relay_of(home)) is not None:
-            entities.append(NetatmoRelayConnectivity(coordinator, home, relay))
-            entities.append(NetatmoWebhookActive(coordinator, home, relay))
-    async_add_entities(entities)
+            if (relay := relay_of(home)) is not None:
+                entities.append(NetatmoRelayConnectivity(coordinator, home, relay))
+                entities.append(NetatmoWebhookActive(coordinator, home, relay))
+        return entities
+
+    async_add_new_entities(entry, coordinator, build, async_add_entities)
 
 
 class NetatmoValveConnectivity(NetatmoEnergyValveEntity, BinarySensorEntity):

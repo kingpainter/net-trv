@@ -1,5 +1,5 @@
 """Config flow for NET-TRV (OAuth2 against the user's own Netatmo app)."""
-# VERSION = "0.11.0"
+# VERSION = "0.11.1"
 
 from __future__ import annotations
 
@@ -46,6 +46,11 @@ class NetatmoEnergyFlowHandler(
 
     DOMAIN = DOMAIN
     VERSION = 1
+
+    # Netatmo home ids with a relay, filled by _async_check_account. The
+    # entry's unique id is the first one: stable, and unlike the account
+    # e-mail not personal data.
+    _home_ids: list[str]
 
     @property
     @override
@@ -126,14 +131,23 @@ class NetatmoEnergyFlowHandler(
         """
         if error := await self._async_check_account(data):
             return self.async_abort(reason=error)
-        if self.source == SOURCE_REAUTH:
-            return self.async_update_reload_and_abort(
-                self._get_reauth_entry(), data_updates=data
+        if self.source in (SOURCE_REAUTH, SOURCE_RECONFIGURE):
+            entry = (
+                self._get_reauth_entry()
+                if self.source == SOURCE_REAUTH
+                else self._get_reconfigure_entry()
             )
-        if self.source == SOURCE_RECONFIGURE:
+            # Same account = the entry's home is still on it. An entry from
+            # before 0.11.0 has no unique id yet and takes the new one.
+            if entry.unique_id and entry.unique_id not in self._home_ids:
+                return self.async_abort(reason="wrong_account")
             return self.async_update_reload_and_abort(
-                self._get_reconfigure_entry(), data_updates=data
+                entry,
+                unique_id=entry.unique_id or self._home_ids[0],
+                data_updates=data,
             )
+        await self.async_set_unique_id(self._home_ids[0])
+        self._abort_if_unique_id_configured()
         return self.async_create_entry(title="NET-TRV", data=data)
 
     async def _async_check_account(self, data: dict[str, Any]) -> str | None:
@@ -150,7 +164,10 @@ class NetatmoEnergyFlowHandler(
         except (ApiError, ClientError, TimeoutError) as err:
             self.logger.warning("Could not read Netatmo homes: %s", err)
             return "cannot_connect"
-        if not any(is_energy_home(home) for home in account.homes.values()):
+        self._home_ids = sorted(
+            home_id for home_id, home in account.homes.items() if is_energy_home(home)
+        )
+        if not self._home_ids:
             return "no_energy_home"
         return None
 

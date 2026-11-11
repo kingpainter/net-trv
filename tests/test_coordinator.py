@@ -169,3 +169,12 @@ async def test_topology_event_schedules_confirm_refresh(
     urls = [c.kwargs["url"] for c in mock_api.call_args_list]
     assert any(url.endswith("api/homesdata") for url in urls)
     assert any(url.endswith("api/homestatus") for url in urls)
+
+
+async def test_setup_sets_unique_id_on_old_entry(
+    hass: HomeAssistant, config_entry: MockConfigEntry
+) -> None:
+    """Entries from before 0.11.0 get the home id as unique id at startup."""
+    assert config_entry.unique_id is None
+    await _setup(hass, config_entry)
+    assert config_entry.unique_id == "home1"
