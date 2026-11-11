@@ -29,3 +29,23 @@ def test_icon_keys_exist_in_strings() -> None:
         for key in keys:
             assert key in strings["entity"][platform], (platform, key)
     assert set(icons["services"]) == set(strings["services"])
+
+
+def _state_icons_differ_from_default(node: object, path: str) -> list[str]:
+    """Paths where a state icon equals its default (hassfest rejects these)."""
+    if not isinstance(node, dict):
+        return []
+    found = [
+        f"{path}.{state}"
+        for state, icon in node.get("state", {}).items()
+        if icon == node.get("default")
+    ]
+    for key, child in node.items():
+        if key != "state":
+            found += _state_icons_differ_from_default(child, f"{path}.{key}")
+    return found
+
+
+def test_no_state_icon_equals_default() -> None:
+    icons = json.loads((COMPONENT / "icons.json").read_text())
+    assert _state_icons_differ_from_default(icons, "icons") == []
