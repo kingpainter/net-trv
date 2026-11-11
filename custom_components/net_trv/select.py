@@ -1,5 +1,5 @@
 """Heating schedule selection on the relay device."""
-# VERSION = "0.11.1"
+# VERSION = "0.11.2"
 
 from __future__ import annotations
 

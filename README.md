@@ -67,7 +67,7 @@ offered, and both can be used side by side.
 - **Local outdoor weather without a station**: the median of public Netatmo
   stations around your home.
 
-## Features (0.11.1)
+## Features (0.11.2)
 
 | Feature | Status |
 | --- | --- |
@@ -131,7 +131,7 @@ Settings → Devices & services → NET-TRV → **Configure**:
 
 | Entity | Description |
 | --- | --- |
-| `climate.<room>` | Room thermostat. Attributes: `heating_power_request`, `open_window`, `anticipating`, `netatmo_setpoint_mode`, `setpoint_end_time`. |
+| `climate.<room>` | Room thermostat. Attributes: `selected_schedule`, `heating_power_request`, `open_window`, `anticipating`, `netatmo_setpoint_mode`, `setpoint_end_time`. |
 | `sensor.<room>_battery` / `_battery_state` | Valve battery (% is approximate, derived from Netatmo's state). |
 | `sensor.<room>_radio_signal` | Valve radio signal to the relay, dBm. Disabled by default. |
 | `sensor.<room>_firmware` | Valve firmware revision. Disabled by default. |

@@ -1,5 +1,5 @@
 """Climate entities for NET-TRV: one per Netatmo room."""
-# VERSION = "0.11.1"
+# VERSION = "0.11.2"
 
 from __future__ import annotations
 
@@ -39,7 +39,11 @@ from .const import (
     PRESETS,
     TEMP_STEP,
 )
-from .coordinator import NetatmoEnergyConfigEntry, NetatmoEnergyCoordinator
+from .coordinator import (
+    NetatmoEnergyConfigEntry,
+    NetatmoEnergyCoordinator,
+    selected_therm_schedule,
+)
 from .entity import NetatmoEnergyRoomEntity, async_add_new_entities, valves_in
 from .schedules import async_edit_schedule, set_zone_temperature
 from .select import async_switch_schedule
@@ -180,7 +184,10 @@ class NetatmoEnergyClimate(NetatmoEnergyRoomEntity, ClimateEntity):
             self._attr_hvac_mode, room.heating_power_request, room.open_window
         )
         end = room.therm_setpoint_end_time
+        schedule = selected_therm_schedule(room.home)
         self._attr_extra_state_attributes = {
+            # Same attribute as core netatmo; heat_manager's panel reads it.
+            "selected_schedule": schedule.name if schedule else None,
             "heating_power_request": room.heating_power_request,
             "open_window": room.open_window,
             "anticipating": room.anticipating,

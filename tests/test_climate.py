@@ -73,6 +73,7 @@ async def test_rooms_become_climate_entities(
     assert stuen.attributes[ATTR_HVAC_ACTION] == HVACAction.HEATING
     assert stuen.attributes["current_temperature"] == 20.5
     assert stuen.attributes[ATTR_TEMPERATURE] == 21
+    assert stuen.attributes["selected_schedule"] == "Standard"
 
     bad = hass.states.get(BAD)
     assert bad is not None

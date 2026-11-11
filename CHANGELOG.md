@@ -4,6 +4,13 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.11.2] - 2026-11-11
+
+### Added
+- Climate attribute `selected_schedule` (name of the active heating
+  schedule), as in the core `netatmo` integration. heat_manager's panel reads
+  it.
+
 ## [0.11.1] - 2026-11-11
 
 Quality scale: Gold (step B of 0.11.0).
